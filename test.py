@@ -63,7 +63,7 @@ plt.tight_layout()
 plt.show()
 
 model = ResNet_18()
-model.load_weights("/Users/gangjiahong/PycharmProjects/fish/result/model_weight.h5")
+model.load_weights("/home/gou/Programs/fish/result/model_weight.h5")
 
 def add_batch(img):
     img_normalized = img / 255.0
