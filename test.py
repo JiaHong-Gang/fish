@@ -2,6 +2,7 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
+import pandas as pd
 from resnet_model import ResNet_18
 
 from tensorflow.python.keras.combinations import generate
@@ -64,7 +65,8 @@ plt.show()
 
 model = ResNet_18()
 model.load_weights("/home/gou/Programs/fish/result/model_weight.h5")
-
+csv_path = "/home/gou/Programs/fish/result/predict_blue.csv"
+result = []
 def add_batch(img):
     img_normalized = img / 255.0
     img_batch = np.expand_dims(img_normalized,axis = 0)
@@ -72,9 +74,16 @@ def add_batch(img):
 for i, img in enumerate(generate_images):
     img_batch = add_batch(img)
     prediction = model.predict(img_batch)[0]
-    predicted_class0 = prediction[0]
-    predicted_class1 = prediction[1]
-    print(f"Sample {i + 1}:Prediction = {prediction}")
+    predicted_bad = prediction[0]
+    predicted_good = prediction[1]
+    result.append({
+        "Sample":i + 1,
+        "prediction_bad_label": predicted_bad, "prediction_good_label": predicted_good
+    })
+    print(f"Sample {i + 1}:prediction_bad_label = {predicted_bad}, prediction_good_label = {predicted_good}")
+df = pd.DataFrame(result)
+df.to_csv(csv_path, index = False)
+print(f"data saved in {csv_path}")
 
 
 
