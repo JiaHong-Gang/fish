@@ -2,8 +2,8 @@ import cv2
 import matplotlib.pyplot as plt
 import numpy as np
 import os
-import pandas as pd
-from resnet_model import ResNet_18
+#import pandas as pd
+#from resnet_model import ResNet_18
 
 from tensorflow.python.keras.combinations import generate
 """"
@@ -35,7 +35,7 @@ plt.xlabel("value")
 plt.tight_layout()
 plt.show()
 """
-hue = (97, 110)
+hue = (15, 30)
 saturation = (240, 253)
 value = (220, 255)
 num_images = 10
@@ -53,7 +53,7 @@ for i in range(num_images):
 cols = 5
 rows = (num_images + cols - 1) // cols
 fig ,axes = plt.subplots(rows, cols, figsize = (12, 4))
-fig.suptitle("Blue images",fontsize = 16)
+fig.suptitle("Yellow images",fontsize = 16)
 
 for i, ax in enumerate(axes.flat):
     if i < num_images:
@@ -62,7 +62,7 @@ for i, ax in enumerate(axes.flat):
     ax.axis("off")
 plt.tight_layout()
 plt.show()
-
+"""
 model = ResNet_18()
 model.load_weights("/home/gou/Programs/fish/result/model_weight.h5")
 csv_path = "/home/gou/Programs/fish/result/predict_blue.csv"
@@ -84,6 +84,6 @@ for i, img in enumerate(generate_images):
 df = pd.DataFrame(result)
 df.to_csv(csv_path, index = False)
 print(f"data saved in {csv_path}")
-
+"""
 
 
