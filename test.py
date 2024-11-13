@@ -35,9 +35,9 @@ plt.xlabel("value")
 plt.tight_layout()
 plt.show()
 """
-hue = (97, 110)
+hue = (15, 30)
 saturation = (240, 253)
-value = (110, 150)
+value = (220, 255)
 num_images = 10
 generate_images = []
 for i in range(num_images):
