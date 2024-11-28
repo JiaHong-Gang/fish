@@ -5,6 +5,8 @@ def load_image_from_folder(folder):
     images = []
     for root, dirs, files in os.walk(folder):
         for file in files:
+            if file == ".DS_Store":
+                continue
             image_path = os.path.join(root, file)
             if os.path.isfile(image_path):
                 img = cv2.imread(image_path)
