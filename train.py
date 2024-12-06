@@ -8,8 +8,8 @@ from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 def train_model():
     images, mask = load_image_and_mask()
-    images = process_image(images)
-    masks = process_image(mask)
+    images = process_image(images, is_mask = False)
+    masks = process_image(mask, is_mask= True)
     x_train, x_temp, y_train, y_temp = train_test_split(images, masks ,test_size = 0.3, random_state = 42)
     x_val, x_test,y_val, y_test = train_test_split(x_temp, y_temp, test_size= 0.3,random_state = 42)
     model = unet(input_shape=(ht_img, wd_img, 3))
