@@ -3,7 +3,7 @@ from loadimage import load_image_and_mask
 from metric import iou_metric
 from unet_model import unet
 #from metric import iou_metric
-from imageprocess import process_image, label
+from imageprocess import process_image
 from tensorflow.keras.optimizers import Adam
 from sklearn.model_selection import train_test_split
 def train_model():
