@@ -11,7 +11,7 @@ def load_image_and_mask(identifier = "ID"):
             continue
         img_id = [part for part in img_file.split("_") if identifier in part] #split file name
         if img_id:
-            img_dict[img_id[0]] = os.path.join(img_folder, img_file) # add image path
+            img_dict[img_id[0]] = os.path.join(img_folder, img_file) #add image path
     #read mask ID
     mask_dict = {}
     for mask_file in os.listdir(mask_folder):
@@ -31,13 +31,11 @@ def load_image_and_mask(identifier = "ID"):
         mask_path = mask_dict[common_id]
 
         img = cv2.imread(img_path)
-        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB) # read as RGB image
-        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE) # read as gray image
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)  # read as RGB image
+        mask = cv2.imread(mask_path, cv2.IMREAD_GRAYSCALE)  # read as gray image
 
         images.append(img)
         masks.append(mask)
 
     print(f"Loaded {len(images)} images and {len(masks)} masks.")
     return images, masks
-
-
