@@ -1,5 +1,3 @@
-import tensorflow as tf
-from fontTools.unicodedata import block
 from keras.src.layers import GlobalAveragePooling2D, Conv2DTranspose
 from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate
 from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
