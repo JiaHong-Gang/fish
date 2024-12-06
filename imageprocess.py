@@ -12,7 +12,10 @@ def process_image(images, is_mask = False):
             resized_img = resized_img / 255.0  # normalized image
             resized_img = np.expand_dims(resized_img, axis = -1) #add channel dimension
         pro_img.append(resized_img)
-    images = np.array(pro_img) 
-    print("image process finished")
+    images = np.array(pro_img)
+    if is_mask:
+        print("image process finished")
+    else:
+        print("mask process finished")
     return images
 
