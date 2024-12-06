@@ -3,7 +3,7 @@ import os
 
 def load_image_and_mask(identifier = "ID"):
     img_folder = "/home/gou/fish/IDdata"
-    mask_folder = "/home/gou/fish/mask"
+    mask_folder = "/home/gou/fish/masks"
     # read image ID
     img_dict = {}
     for img_file in os.listdir(img_folder):
