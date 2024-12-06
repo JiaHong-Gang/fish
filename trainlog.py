@@ -1,4 +1,6 @@
-import matplotlib.pyplot as plt 
+from tabnanny import verbose
+
+import matplotlib.pyplot as plt
 
 def plot_curve(history):
     plt.figure(figsize=(12,5))
@@ -21,4 +23,10 @@ def plot_curve(history):
     plt.savefig("/home/gou/Programs/fish/result/learning_curve.jpeg")
     print("learning result has been saved")
     plt.show()
+    """
+    test_loss ,test_accuracy, test_iou = model.evaluate(x_test,y_test,verbose = 1)
+    print(f"test loss is {test_loss}")
+    print(f"test accuracy is {test_accuracy}")
+    print(f"test iou is {test_iou}")
+    """
 
