@@ -1,11 +1,32 @@
 import cv2
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import pandas as pd
-from resnet_model import ResNet_18
 
-from tensorflow.python.keras.combinations import generate
+def load_image_from_folder(folder):
+    images = []
+    for root, dirs, files in os.walk(folder):
+        for file in files:
+            if file == ".DS_Store":
+                continue
+            image_path = os.path.join(root, file)
+            if os.path.isfile(image_path):
+                img = cv2.imread(image_path)
+                if img is not None:
+                    img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
+                    images.append(img)
+                else:
+                    print(f"error!, Can't read image from {image_path}")
+    return images
+
+def load_image():
+    folder1 = "/Users/gangjiahong/Downloads/data1"
+    folder2 = "/Users/gangjiahong/Downloads/data2"
+
+    image1 = load_image_from_folder(folder1)
+    image2 = load_image_from_folder(folder2)
+    images = image1 + image2
+    return images
+img = load_image()
+print("total images are ", len(img))
 """"
 image_path = "/Users/gangjiahong/Downloads/data1/3.県品評会/第14回千葉県若鯉品評会/1.15部総合優勝.jpg"
 img = cv2.imread(image_path)
@@ -34,8 +55,8 @@ plt.xlabel("value")
 
 plt.tight_layout()
 plt.show()
-"""
-hue = (15, 30)
+
+hue = (97, 110)
 saturation = (240, 253)
 value = (220, 255)
 num_images = 10
@@ -53,7 +74,7 @@ for i in range(num_images):
 cols = 5
 rows = (num_images + cols - 1) // cols
 fig ,axes = plt.subplots(rows, cols, figsize = (12, 4))
-fig.suptitle("Yellow images",fontsize = 16)
+fig.suptitle("Blue images",fontsize = 16)
 
 for i, ax in enumerate(axes.flat):
     if i < num_images:
@@ -84,6 +105,8 @@ for i, img in enumerate(generate_images):
 df = pd.DataFrame(result)
 df.to_csv(csv_path, index = False)
 print(f"data saved in {csv_path}")
+"""
+
 
 
 
