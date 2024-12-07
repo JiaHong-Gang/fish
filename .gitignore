@@ -1,3 +1,5 @@
 .idea/vcs.xml
 .idea
 result/
+result/model_weight.h5
+
