@@ -14,8 +14,8 @@ def process_image(images, is_mask = False):
         pro_img.append(resized_img)
     images = np.array(pro_img)
     if is_mask:
-        print("image process finished")
-    else:
         print("mask process finished")
+    else:
+        print("image process finished")
     return images
 
