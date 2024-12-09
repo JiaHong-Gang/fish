@@ -54,4 +54,4 @@ def prediction(x_val, y_val, model):
     predictions = model.predict(x_val, batch_size=batch_size)
     binary_predictions = (predictions > 0.5).astype(np.uint8)
     visualize_overlays_and_save(x_val, y_val, binary_predictions, alpha=0.5)
-    return binary_predictions
+    print(f"segment image has been saved")
