@@ -7,6 +7,8 @@ def overlay_segmentation(image, prediction, alpha=0.5, color=(1, 0, 0)):
     if len(image.shape) == 2 or image.shape[-1] == 1:
         image = np.stack([image] * 3, axis=-1)
 
+    prediction = np.squeeze(prediction)  # 确保 prediction 是 2D 的
+
     overlay = np.zeros_like(image, dtype=np.float32)
     overlay[:, :, 0] = prediction * color[0]
     overlay[:, :, 1] = prediction * color[1]
@@ -17,6 +19,7 @@ def overlay_segmentation(image, prediction, alpha=0.5, color=(1, 0, 0)):
     blended = blended * (1 - alpha) + overlay * alpha
     blended = np.clip(blended, 0, 1)
     return (blended * 255).astype(np.uint8)
+
 
 def visualize_overlays_and_save(images, masks, predictions, alpha=0.5, output_dir="/home/gou/Programs/fish/result/segment_image"):
     if not os.path.exists(output_dir):
