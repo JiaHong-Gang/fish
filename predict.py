@@ -107,7 +107,7 @@ def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/f
         plt.savefig(save_path)
         plt.close()
 
-def predict_block_image(model, x_val, y_val):
+def predict_block_image(x_val, y_val, model):
     all_block_images, all_block_masks = split_image(x_val, y_val, 256)
     iou_list = []
     all_images = []
