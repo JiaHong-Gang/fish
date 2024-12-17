@@ -2,7 +2,8 @@ import tensorflow as tf
 import os
 from train import train_model
 from trainlog import plot_curve
-from predict import prediction
+from predict import prediction, predict_block_image
+
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
     gpus = tf.config.list_physical_devices("GPU")
@@ -16,6 +17,7 @@ def main():
         model, history, x_val, y_val = train_model()
         plot_curve(history)
         prediction(x_val, y_val,model)
+        predict_block_image(x_val, y_val, model)
 if __name__ == '__main__':
     main()
 
