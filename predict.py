@@ -107,7 +107,7 @@ def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/f
         plt.imshow(predictions[i], cmap = "gray")
         plt.title("predicted image block")
         plt.axis("off")
-        plt.tight_layout()
+        plt.gcf().set_constrained_layout(True)
         save_path = os.path.join(save_dir, f"image {i}.jpg")
         plt.savefig(save_path)
         plt.close()
