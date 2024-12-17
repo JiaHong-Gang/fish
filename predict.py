@@ -112,7 +112,7 @@ def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/f
         plt.savefig(save_path)
         plt.close()
 
-def predict_block_image(x_val, y_val, model, block_size = 256, target_size = 512):
+def predict_block_image(x_val, y_val, model, block_size = 256):
     all_block_images, all_block_masks = split_image(x_val, y_val, block_size)
     iou_list = []
     all_images = []

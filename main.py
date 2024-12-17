@@ -17,7 +17,7 @@ def main():
         model, history, x_val, y_val = train_model()
         plot_curve(history)
         prediction(x_val, y_val,model)
-        predict_block_image(x_val, y_val, model)
+        predict_block_image(x_val, y_val, model, 256)
 if __name__ == '__main__':
     main()
 
