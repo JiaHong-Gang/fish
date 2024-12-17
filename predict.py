@@ -92,29 +92,31 @@ def calculate_iou(pred, mask):
     union = np.logical_or(pred_binary, mask_binary).sum()
     return intersection / union if union > 0 else 0
 
-def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/fish/result/segment_block_image"):
-    os.makedirs(save_dir, exist_ok = True)
-    plt.figure(figsize = (12,12))
+def visualize_result(block_images, predictions, save_dir="/home/gou/Programs/fish/result/segment_block_image"):
+    os.makedirs(save_dir, exist_ok=True)
 
-    num_to_show = min(4,len(block_images),len(predictions))
+    print(f"Total blocks to save: {len(block_images)}")  
 
-    for i in range(num_to_show):
+    for idx, (img, pred) in enumerate(zip(block_images, predictions)):
         plt.figure(figsize=(8, 4))
 
         plt.subplot(1, 2, 1)
-        plt.imshow(block_images[i], cmap="gray")
-        plt.title("Original image block")
+        plt.imshow(img, cmap="gray")
+        plt.title(f"Original Block {idx + 1}")
         plt.axis("off")
 
         plt.subplot(1, 2, 2)
-        plt.imshow(predictions[i], cmap="gray")
-        plt.title("Predicted image block")
+        plt.imshow(pred, cmap="gray")
+        plt.title(f"Predicted Block {idx + 1}")
         plt.axis("off")
 
-        save_path = os.path.join(save_dir, f"block_{i + 1}.jpg")
+        save_path = os.path.join(save_dir, f"block_{idx + 1}.jpg")
         plt.tight_layout()
         plt.savefig(save_path)
         plt.close()
+
+    print(f"All blocks saved to {save_dir}")
+
 
 def predict_block_image(x_val, y_val, model, block_size = 256):
     all_block_images, all_block_masks = split_image(x_val, y_val, block_size)
