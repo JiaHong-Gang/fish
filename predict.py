@@ -80,6 +80,7 @@ def split_image(x_val,y_val , block_size = 256, target_size = 512):
                 block_mask_resized = cv2.resize(block_mask,(target_size, target_size), interpolation=cv2.INTER_NEAREST)
                 block_images.append(block_img_resized)
                 block_masks.append(block_mask_resized)
+        print(f"image processed into {len(block_images)} blocks")
         all_block_images.append(block_images)
         all_block_masks.append(block_masks)
     return all_block_images, all_block_masks
@@ -98,17 +99,20 @@ def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/f
     num_to_show = min(4,len(block_images),len(predictions))
 
     for i in range(num_to_show):
-        plt.subplot(4, 3, i*3 +1)
-        plt.imshow(block_images[i])
+        plt.figure(figsize=(8, 4))
+
+        plt.subplot(1, 2, 1)
+        plt.imshow(block_images[i], cmap="gray")
         plt.title("Original image block")
         plt.axis("off")
 
-        plt.subplot(4, 3, i*3 +2)
-        plt.imshow(predictions[i], cmap = "gray")
-        plt.title("predicted image block")
+        plt.subplot(1, 2, 2)
+        plt.imshow(predictions[i], cmap="gray")
+        plt.title("Predicted image block")
         plt.axis("off")
-        plt.gcf().set_constrained_layout(True)
-        save_path = os.path.join(save_dir, f"image {i}.jpg")
+
+        save_path = os.path.join(save_dir, f"block_{i + 1}.jpg")
+        plt.tight_layout()
         plt.savefig(save_path)
         plt.close()
 
