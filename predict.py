@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import cv2
 import matplotlib.pyplot as plt
 from config import batch_size
 
@@ -62,7 +63,7 @@ def prediction(x_val, y_val, model):
     print(f"segment image has been saved")
 
 #-------------------show block segmentation result--------------------
-def split_image(x_val,y_val , block_size = 256):
+def split_image(x_val,y_val , block_size = 256, target_size = 512):
     all_block_images = []
     all_block_masks = []
     for img, mask in zip(x_val[:5], y_val[:5]):
@@ -73,8 +74,12 @@ def split_image(x_val,y_val , block_size = 256):
             for j in range(0,w,block_size):
                 block_img = img[i:i + block_size, j:j + block_size]
                 block_mask = mask[i:i + block_size ,j:j + block_size]
-                block_images.append(block_img)
-                block_masks.append(block_mask)
+                block_img = np.array(block_img, dtype = np.float32)
+                block_mask = np.array(block_mask, dtype = np.float32)
+                block_img_resized = cv2.resize(block_img,(target_size, target_size), interpolation=cv2.INTER_LINEAR)
+                block_mask_resized = cv2.resize(block_mask,(target_size, target_size), interpolation=cv2.INTER_NEAREST)
+                block_images.append(block_img_resized)
+                block_masks.append(block_mask_resized)
         all_block_images.append(block_images)
         all_block_masks.append(block_masks)
     return all_block_images, all_block_masks
@@ -102,13 +107,13 @@ def visualize_result(block_images, predictions, save_dir = "/home/gou/Programs/f
         plt.imshow(predictions[i], cmap = "gray")
         plt.title("predicted image block")
         plt.axis("off")
-        save_path = os.path.join(save_dir, f"image {i}.jpg")
         plt.tight_layout()
+        save_path = os.path.join(save_dir, f"image {i}.jpg")
         plt.savefig(save_path)
         plt.close()
 
-def predict_block_image(x_val, y_val, model):
-    all_block_images, all_block_masks = split_image(x_val, y_val, 256)
+def predict_block_image(x_val, y_val, model, block_size = 256, target_size = 512):
+    all_block_images, all_block_masks = split_image(x_val, y_val, block_size)
     iou_list = []
     all_images = []
     all_predictions = []
@@ -118,14 +123,19 @@ def predict_block_image(x_val, y_val, model):
         batch_masks = np.array(batch_masks)
         batch_predictions = model.predict(batch_images, batch_size=batch_size)
 
-        for pred, mask in zip(batch_predictions, batch_masks):
+        for img, pred, mask in zip(batch_images, batch_predictions, batch_masks):
             if pred.ndim == 3:
                 pred = pred[:,:,0]
-            iou = calculate_iou(pred, mask)
+            pred_resized = cv2.resize(pred, (block_size, block_size), interpolation=cv2.INTER_LINEAR)
+            mask_resized = cv2.resize(mask,(block_size, block_size), interpolation=cv2.INTER_NEAREST)
+            img_resized = cv2.resize(img, (block_size, block_size), interpolation=cv2.INTER_LINEAR)
+            pred_resized = (pred_resized > 0.5).astype(np.int32)
+            mask_resized = mask_resized.astype(np.int32)
+            iou = calculate_iou(pred_resized, mask_resized)
             iou_list.append(iou)
             print(f"iou is {iou:.2f}")
-        all_images.append(batch_images)
-        all_predictions.append(batch_predictions)
+            all_images.append(img_resized)
+            all_predictions.append(pred_resized)
     mean_iou = np.mean(iou_list)
     print(f"mean iou is {mean_iou:.2f}")
-    visualize_result(all_images, all_predictions)
+    visualize_result(np.vstack(all_images), np.vstack(all_predictions))
