@@ -123,7 +123,7 @@ def predict_block_image(x_val, y_val, model, block_size = 256):
         batch_masks = np.array(batch_masks)
         batch_predictions = model.predict(batch_images, batch_size=batch_size)
 
-        for img, pred, mask in zip(batch_images, batch_predictions, batch_masks):
+        for idx, (img, pred, mask) in enumerate(zip(batch_images, batch_predictions, batch_masks)):
             if pred.ndim == 3:
                 pred = pred[:,:,0]
             pred_resized = cv2.resize(pred, (block_size, block_size), interpolation=cv2.INTER_LINEAR)
@@ -133,9 +133,9 @@ def predict_block_image(x_val, y_val, model, block_size = 256):
             mask_resized = mask_resized.astype(np.int32)
             iou = calculate_iou(pred_resized, mask_resized)
             iou_list.append(iou)
-            print(f"iou is {iou:.2f}")
+            print(f"block {idx +1} , iou = {iou:.2f}")
             all_images.append(img_resized)
             all_predictions.append(pred_resized)
     mean_iou = np.mean(iou_list)
     print(f"mean iou is {mean_iou:.2f}")
-    visualize_result(np.vstack(all_images), np.vstack(all_predictions))
+    visualize_result(all_images, all_predictions)
