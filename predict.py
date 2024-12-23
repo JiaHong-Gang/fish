@@ -1,6 +1,8 @@
 import numpy as np
 import os
 import cv2
+import umap
+from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
 from config import batch_size
 
@@ -145,3 +147,43 @@ def predict_block_image(x_val, y_val, model, block_size = 256):
     mean_iou = np.mean(iou_list)
     print(f"mean iou is {mean_iou:.2f}")
     visualize_result(all_images, all_predictions)
+#------------------------UMAP-------------------------
+def feature_dim_reduce(x_val, y_val, model):
+    model.load_weights("/home/gou/Programs/fish/result/model_weight.h5")
+    print(f"model weight has been loaded")
+    save_dir = "/home/gou/Programs/fish/result/"
+    os.makedirs(save_dir, exist_ok=True)
+    layer_name = "bottom_Conv2"
+    features = Model(inputs = model.input, outputs = model.get_layer(layer_name).output)
+    num_samples = x_val.shape[0]
+    all_features = []
+
+    for i in range(0, num_samples,batch_size):
+        batch_images = x_val[i: i+batch_size]
+        feature = features.predict(batch_images)
+        all_features.append(feature)
+    all_features = np.concatenate(all_features, axis = 0)
+    print(f"Feature extracted , shape: ", all_features.shape)
+    flattened_features = all_features.reshape(all_features.shape[0], -1)
+    flattened_masks = y_val.flatten()
+    print(f"Flattened features shape: ", flattened_features.shape)
+    print(f"Flattened masks shape: ", flattened_masks.shape)
+
+    reducer = umap.UMAP(n_components = 2, n_neighbors = 15, min_dist = 0.1, random_state = 42)
+    embedding = reducer.fit_transform(flattened_features)
+    print(f"UMAP embedding shape :", embedding.shape)
+
+    plt.figure(figsize = (10, 8))
+    plt.scatter(embedding[:, 0], embedding[:, 1], c="gray", s=1, alpha=0.3, label="Intra-Class Distribution")
+    plt.scatter(embedding[:, 0], embedding[:, 1], c=flattened_masks, cmap='coolwarm', s=1, alpha=0.7,
+                label="Inter-Class Distribution")
+    plt.colorbar(label="Class (Foreground=1, Background=0)")
+    plt.title("Combined Distribution: Inter-Class and Intra-Class")
+    plt.xlabel("UMAP Dimension 1")
+    plt.ylabel("UMAP Dimension 2")
+    save_path = os.path.join(save_dir, "umap.jpg")
+    plt.tight_layout()
+    plt.savefig(save_path)
+    plt.close()
+
+
