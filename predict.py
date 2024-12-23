@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import cv2
-import umap
+import umap.umap_ as umap
 from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
 from config import batch_size
@@ -164,7 +164,7 @@ def feature_dim_reduce(x_val, y_val, model):
         all_features.append(feature)
     all_features = np.concatenate(all_features, axis = 0)
     print(f"Feature extracted , shape: ", all_features.shape)
-    flattened_features = all_features.reshape(all_features.shape[0], -1)
+    flattened_features = all_features.reshape(-1, all_features.shape[-1])
     flattened_masks = y_val.flatten()
     print(f"Flattened features shape: ", flattened_features.shape)
     print(f"Flattened masks shape: ", flattened_masks.shape)
