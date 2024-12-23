@@ -1,6 +1,7 @@
 import numpy as np
 import os
 import cv2
+from skimage.transform import resize
 import umap.umap_ as umap
 from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
@@ -164,6 +165,10 @@ def feature_dim_reduce(x_val, y_val, model):
         all_features.append(feature)
     all_features = np.concatenate(all_features, axis = 0)
     print(f"Feature extracted , shape: ", all_features.shape)
+    target_height, target_width = all_features.shape[1:3]
+    y_val_resized = np.array([resize(mask, (target_height, target_width), order=0, preserve_range=True, anti_aliasing=False)
+                              for mask in y_val])
+    print(f"Resized masks shape: {y_val_resized.shape}")
     flattened_features = all_features.reshape(-1, all_features.shape[-1])
     flattened_masks = y_val.flatten()
     print(f"Flattened features shape: ", flattened_features.shape)
