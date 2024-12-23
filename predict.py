@@ -168,6 +168,7 @@ def feature_dim_reduce(x_val, y_val, model):
     target_height, target_width = all_features.shape[1:3]
     y_val_resized = np.array([resize(mask, (target_height, target_width), order=0, preserve_range=True, anti_aliasing=False)
                               for mask in y_val])
+    y_val_resized = y_val_resized.squeeze(axis=-1)
     print(f"Resized masks shape: {y_val_resized.shape}")
     flattened_features = all_features.reshape(-1, all_features.shape[-1])
     flattened_masks = y_val.flatten()
