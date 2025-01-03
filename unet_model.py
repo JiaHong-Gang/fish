@@ -2,7 +2,7 @@ from tensorflow.keras.layers import GlobalAveragePooling2D, Conv2DTranspose
 from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate
 from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
 from tensorflow.keras.models import Model
-import tenforflow as tf
+import tensorflow as tf
 from config import num_class
 
 def time_embedding(t, dim):
