@@ -5,7 +5,7 @@ from config import ht_img, wd_img
 def process_image(images, is_mask = False):
     pro_img = []
     for img in images:
-        resized_img = cv2.resize(img,(ht_img, wd_img)) # resize image to 1024x1024
+        resized_img = cv2.resize(img,(ht_img, wd_img)) # resize image to 512x512
         if not is_mask:
             resized_img = resized_img/255.0  # normalized image
         else:

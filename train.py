@@ -10,7 +10,7 @@ def train_model(x_train, x_val, y_train, y_val, model):
     val_data = val_data.batch(batch_size).prefetch(buffer_size=tf.data.AUTOTUNE)
 
     # compile model
-    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=0.0001), metrics=["accuracy", iou_metric])
+    model.compile(loss="binary_crossentropy", optimizer=Adam(learning_rate=0.0001), metrics=["accuracy"])
     history = model.fit(
         train_data,
         batch_size=batch_size, epochs=epochs,
