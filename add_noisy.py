@@ -12,14 +12,17 @@ def linear_beta_schedule(t, beta_start = 0.0001, beta_end = 0.02, T = 1000):
 def sample(x0, t):
     beta = linear_beta_schedule(t)
     alpha = 1.0 - beta
-    sqrt_alpha = tf.sqrt(alpha, tf.float32)
-    one_min_alpha = tf.sqrt(1.0 - alpha, tf.float32)
+    sqrt_alpha = tf.sqrt(alpha)
+    sqrt_alpha = tf.cast(sqrt_alpha, tf.float32 )
+    one_min_alpha = tf.sqrt(1.0 - alpha)
+    one_min_alpha = tf.cast(one_min_alpha, tf.float32)
     #reshape
     sqrt_alpha = sqrt_alpha[:, None, None, None]
     one_min_alpha = one_min_alpha[:, None, None, None]
 
     # noisy
-    noisy = tf.random.normal(tf.shape(x0), tf.float32)
+    noisy = tf.random.normal(tf.shape(x0))
+    noisy = tf.cast(noisy, tf.float32)
 
     #add noisy
     x_t = sqrt_alpha * x0 + one_min_alpha *noisy
