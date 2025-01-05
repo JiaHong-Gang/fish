@@ -32,6 +32,7 @@ def sample(x0, t):
 def map_func(x0):
     batch = tf.shape(x0)[0]
     t = random_t(batch)
+    x0 = tf.cast(x0, tf.float32)
     x_t = sample(x0, t)
     result = ({"input_image": x_t, "time_input": t}, x0)
 
