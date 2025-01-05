@@ -9,5 +9,5 @@ def process_image(images):
         resized_img = resized_img/255.0  # normalized image
         pro_img.append(resized_img)
     images = np.array(pro_img)
-    print(f"Processing of {len(images)} has been completed")
+    print(f"Processing of {len(images)} images has been completed")
     return images
