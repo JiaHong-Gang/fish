@@ -18,8 +18,8 @@ def time_embedding(t, dim):
     return concat
 
 def unet(input_shape = (512, 512,3), time_dim = 1024):
-    input_layer = Input(input_shape, name = "input_layer")
-    time_input = Input((1,), name = "time_input")
+    input_layer = Input(shape = input_shape, name = "input_image")
+    time_input = Input(shape = (1,), name = "time_input")
 
     # time embedding
     time_embed = time_embedding(time_input, time_dim)
