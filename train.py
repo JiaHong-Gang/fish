@@ -9,7 +9,7 @@ def vae_loss(y_ture, y_pred, z_mean, z_log_var):
     total_loss = reconstruction_loss + kl_loss
     return total_loss
 
-def train_step(model, x_batch, optimizer):
+def train_step(x_batch, model, optimizer):
     with tf.GradientTape() as tape:
         y_pred, z_mean, z_log_var = model(x_batch, training = True)
         loss = vae_loss(x_batch, y_pred, z_mean, z_log_var)
