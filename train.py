@@ -54,4 +54,4 @@ def train_model(x_train,x_val, model, strategy):
         print(f"Validation loss : {epoch_val_loss:.4f}")
 
     model.save("/home/gou/Programs/fish/result/model.h5")
-    return  model, train_losses, val_losses
+    return train_losses, val_losses
