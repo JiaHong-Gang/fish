@@ -1,30 +1,19 @@
+from keras.src.layers import Lambda, Reshape
 from tensorflow.keras.layers import GlobalAveragePooling2D, Conv2DTranspose
-from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate
+from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate,Lambda
 from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
 from tensorflow.keras.models import Model
 import tensorflow as tf
 from config import num_class
 
-def time_embedding(t, dim):
-    if len(t.shape) > 1 and t.shape[-1] == 1:
-        t = tf.squeeze(t, axis = -1)
-    half_dim = dim // 2
-    emb = tf.math.log(10000.0) / (half_dim -1)
-    emb = tf.exp(tf.range(half_dim, dtype = tf.float32) * -emb) #calcuate frequency
-    emb = t[:, None] * emb[None, :]  # t times frequency
-    concat = tf.concat([tf.sin(emb), tf.cos(emb)],axis = 1) # calculate sin, cos and concat
-    if dim % 2 == 1:
-        concat = tf.pad(concat, [[0, 0], [0, 1]])
-    return concat
+def sampling(args):
+    z_mean, z_log_var = args
+    epsilon = tf.random.normal(shape = tf.shape(z_mean))
+    z = z_mean + tf.exp(0.5 * z_log_var) * epsilon
+    return z
 
-def unet(input_shape = (512, 512,3), time_dim = 1024):
+def unet(input_shape = (512, 512,3), latent_dim = 256):
     input_layer = Input(shape = input_shape, name = "input_image")
-    time_input = Input(shape = (1,), name = "time_input")
-
-    # time embedding
-    time_embed = time_embedding(time_input, time_dim)
-    time_embed = Dense(time_dim, activation = "relu", name = "time_dense1")(time_embed)
-    time_embed = Dense(time_dim, activation = "relu", name = "time_dense2")(time_embed)
 
     #encoder
     lc1 = Conv2D(filters = 64, kernel_size =3, activation = "relu", padding = "same", name = "left_Conv1_1")(input_layer)
@@ -42,12 +31,18 @@ def unet(input_shape = (512, 512,3), time_dim = 1024):
     lc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="left_Conv4_1")(lp3)
     lc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="left_Conv4_2")(lc4)
     lp4 = MaxPooling2D(pool_size=2, name="left_pooling4")(lc4)
+
     #bottom
-    bottom = Conv2D(filters=1024, kernel_size=3, activation="relu", padding="same", name="bottom_Conv1")(lp4)
-    bottom = Add(name = "time_add_bottom")([bottom, time_embed[:, None, None, :]])
-    bottom = Conv2D(filters=1024, kernel_size=3, activation="relu", padding="same", name="bottom_Conv2")(bottom)
+    flatten = Flatten()(lp4)
+
+    z_mean = Dense(latent_dim, name = "z_mean")(flatten)
+    z_log_var = Dense(latent_dim, name = "z_log_var")(flatten)
+    # Sampling layer
+    z = Lambda(sampling, output_shape = (latent_dim,), name = "z")([z_mean, z_log_var])
     # decoder
-    tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(bottom)
+    decoder_input = Dense(32 * 32 * 512, activation = "relu", name = "decoder_input")(z)
+    reshape =Reshape((32, 32,512))(decoder_input)
+    tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(reshape)
     tc4 = Concatenate(name = "concatenate4")([tc4,lc4])
     rc4 = Conv2D(filters=512, kernel_size= 3, activation= "relu", padding="same", name="right_conv4_1")(tc4)
     rc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="right_conv4_2")(rc4)
@@ -67,8 +62,8 @@ def unet(input_shape = (512, 512,3), time_dim = 1024):
     rc1 = Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_1")(tc1)
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)
 
-    output_layer = Conv2D(num_class, kernel_size = 1, activation = "linear",name = "output_layer")(rc1)
+    output_layer = Conv2D(num_class, kernel_size = 1, activation = "sigmoid",name = "output_layer")(rc1)
 
-    model = Model(inputs = [input_layer, time_input],outputs = output_layer, name = "diffusion_unet_model")
+    model = Model(inputs = input_layer,outputs = [output_layer, z_mean, z_log_var], name = "vae_unet_model")
 
     return model
