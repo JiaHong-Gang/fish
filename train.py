@@ -32,6 +32,13 @@ def train_model(x_train,x_val, model, strategy):
         val_dataset = val_dataset.batch(batch_size)
         val_dataset = strategy.experimental_distribute_dataset(val_dataset)
         optimizer = Adam(learning_rate=0.0001)
+    #calulate batch number
+    num_train_batch = len(x_train) // batch_size
+    if len(x_train) % batch_size != 0:
+        num_train_batch += 1
+    num_val_batch = len(x_val) // batch_size
+    if len(x_val) %batch_size != 0:
+        num_val_batch +=1
     # train history
     train_losses = []
     val_losses = []
@@ -48,8 +55,10 @@ def train_model(x_train,x_val, model, strategy):
             val_step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_loss, axis=None)
             val_loss += val_step_loss.numpy()
         #calculate mean and print
-        epoch_train_loss = train_loss / len(train_dataset)
-        epoch_val_loss = val_loss / len(val_dataset)
+        epoch_train_loss = train_loss / num_train_batch
+        train_losses.append(epoch_train_loss)
+        epoch_val_loss = val_loss / num_val_batch
+        val_losses.append(epoch_val_loss)
         print(f"Training loss : {epoch_train_loss:.4f}")
         print(f"Validation loss : {epoch_val_loss:.4f}")
 
