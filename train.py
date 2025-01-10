@@ -3,7 +3,7 @@ from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
 def vae_loss(y_ture, y_pred, z_mean, z_log_var):
-    mse = tf.keras.losses.meanSquaredError()
+    mse = tf.keras.losses.MeanSquaredError()
     reconstruction_loss = mse(y_ture, y_pred)
     kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
     total_loss = reconstruction_loss + kl_loss
