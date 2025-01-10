@@ -20,11 +20,15 @@ def train_step(model, x_batch, optimizer):
 def train_model(x_train,x_val, model):
     #train dataset
     train_dataset = tf.data.Dataset.from_tensor_slices(x_train)
+    train_dataset = train_dataset.cache()
     train_dataset = train_dataset.shuffle(buffer_size = 1000)
     train_dataset = train_dataset.batch(batch_size)
+    train_dataset = train_dataset.prefetch(buffer_size = tf.data.AUTOTUNE)
     # validation dataset
     val_dataset = tf.data.Dataset.from_tensor_slices(x_val)
+    val_dataset = val_dataset.cache()
     val_dataset = val_dataset.batch(batch_size)
+    val_dataset = val_dataset.prefetch(buffer_size = tf.data.AUTOTUNE)
     optimizer = Adam(learning_rate = 0.0001)
     #train history
     train_losses = []
