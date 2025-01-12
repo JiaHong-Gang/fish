@@ -1,17 +1,38 @@
 import matplotlib.pyplot as plt
 
-def plot_curve(train_losses, val_losses, epochs):
-    plt.figure(figsize=(12,5))
-# loss curve
-    plt.subplot(1,2,1)
-    plt.plot(range(1,epochs +1), train_losses, label = "Training_loss")
-    plt.plot(range(1,epochs +1), val_losses, label = "Validation_loss")
+def plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs):
+    plt.figure(figsize=(15,5))
+    
+    # Total loss curve
+    plt.subplot(1,3,1)
+    plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
+    plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")
     plt.xlabel("Epochs")
     plt.ylabel("Loss")
-    plt.title(f"Loss-curve")
+    plt.title("Total Loss Curve")
     plt.legend()
+    
+    # Reconstruction loss curve
+    plt.subplot(1,3,2)
+    plt.plot(range(1, epochs + 1), train_reco_losses, label="Training Reconstruction Loss")
+    plt.plot(range(1, epochs + 1), val_reco_losses, label="Validation Reconstruction Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("Reconstruction Loss Curve")
+    plt.legend()
+    
+    # KL divergence loss curve
+    plt.subplot(1,3,3)
+    plt.plot(range(1, epochs + 1), train_kl_losses, label="Training KL Loss")
+    plt.plot(range(1, epochs + 1), val_kl_losses, label="Validation KL Loss")
+    plt.xlabel("Epochs")
+    plt.ylabel("Loss")
+    plt.title("KL Divergence Loss Curve")
+    plt.legend()
+    
+    plt.tight_layout()
     plt.savefig("/home/gou/Programs/fish/result/learning_curve.jpeg")
-    print("learning result has been saved")
+    print("Learning curves have been saved")
     plt.show()
 
 

@@ -26,8 +26,8 @@ def main():
         images = process_image(images)  # process images
         x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
-        train_losses, val_losses = train_model(x_train, x_val, model, strategy)
-        plot_curve(train_losses, val_losses, epochs) # draw learning curve
+        train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses = train_model(x_train, x_val, model, strategy)
+        plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs) # draw learning curve
 if __name__ == '__main__':
     main()
 
