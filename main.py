@@ -19,8 +19,8 @@ def main():
         print(gpu)
         tf.config.experimental.set_memory_growth(gpu, True)
 #----------------------use all GPU-------------------------
-    #strategy = tf.distribute.MirroredStrategy()
-    strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
+    strategy = tf.distribute.MirroredStrategy()
+    #strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
     print(f"number of devices: {strategy.num_replicas_in_sync}")
     with strategy.scope():
         images= load_images()  # load images
