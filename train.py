@@ -23,7 +23,7 @@ class VAEModel(tf.keras.Model):
                 self.kl_loss_tracker,
                 self.total_loss_tracker]
     def vae_loss(self, y_true, y_pred, z_mean, z_log_var):
-        mse = tf.keras.losses.MeanSquaredError()
+        mse = tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.NONE)
         reconstruction_loss = mse(y_true, y_pred)
 
         kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
