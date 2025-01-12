@@ -1,11 +1,12 @@
 import tensorflow as tf
 import os
 from sklearn.model_selection import train_test_split
-from config import ht_img, wd_img,epochs
+from config import ht_img, wd_img, epochs, batch_size
 from load_image import load_images
 from process_image import process_image
 from unet_model import unet
-from train import train_model
+from train import VAEModel
+from tensorflow.keras.optimizers import Adam
 from train_log import plot_curve
 from predict import prediction, predict_block_image, feature_dim_reduce
 
@@ -25,9 +26,17 @@ def main():
         images= load_images()  # load images
         images = process_image(images)  # process images
         x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
-        model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
-        train_losses, val_losses = train_model(x_train, x_val, model, strategy)
-        plot_curve(train_losses, val_losses, epochs) # draw learning curve
+        vae_model = VAEModel(input_shape=(512, 512, 3), latent_dim= 256)
+        optimizer = Adam(learning_rate=1e-4)
+        vae_model.compile(optimizer=optimizer)
+        vae_model.fit(
+            x = x_train,
+            y = None,
+            batch_size = batch_size,
+            epochs = epochs,
+            validation_data = x_val
+        )
+        #plot_curve(train_losses, val_losses, epochs) # draw learning curve
 if __name__ == '__main__':
     main()
 

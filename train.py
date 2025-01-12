@@ -1,66 +1,76 @@
+from unet_model import unet
 import tensorflow as tf
-from config import batch_size, epochs
-from tensorflow.keras.optimizers import Adam
 
-def vae_loss(y_ture, y_pred, z_mean, z_log_var):
-    mse = tf.keras.losses.MeanSquaredError(reduction = tf.keras.losses.Reduction.NONE)
-    reconstruction_loss = tf.reduce_mean(mse(y_ture, y_pred))
-    kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
-    total_loss = reconstruction_loss + kl_loss
-    return total_loss
 
-def train_step(x_batch, model, optimizer):
-    with tf.GradientTape() as tape:
-        y_pred, z_mean, z_log_var = model(x_batch, training = True)
-        loss = vae_loss(x_batch, y_pred, z_mean, z_log_var)
-    gradients = tape.gradient(loss, model.trainable_variables)
-    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
-    return loss
-def val_step(x_batch_val, model):
-    y_pred, z_mean, z_log_var = model(x_batch_val, training = False)
-    loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var)
-    return loss
-def train_model(x_train,x_val, model, strategy):
-    #train dataset
-    with strategy.scope():
-        train_dataset = tf.data.Dataset.from_tensor_slices(x_train)
-        train_dataset = train_dataset.shuffle(buffer_size=1000)
-        train_dataset = train_dataset.batch(batch_size)
-        train_dataset = strategy.experimental_distribute_dataset(train_dataset)
-        # validation dataset
-        val_dataset = tf.data.Dataset.from_tensor_slices(x_val)
-        val_dataset = val_dataset.batch(batch_size)
-        val_dataset = strategy.experimental_distribute_dataset(val_dataset)
-        optimizer = Adam(learning_rate=0.0001)
-    #calulate batch number
-    num_train_batch = len(x_train) // batch_size
-    if len(x_train) % batch_size != 0:
-        num_train_batch += 1
-    num_val_batch = len(x_val) // batch_size
-    if len(x_val) %batch_size != 0:
-        num_val_batch +=1
-    # train history
-    train_losses = []
-    val_losses = []
-    for epoch in range(epochs):
-        print(f"\nEpoch {epoch + 1} / epochs")
-        train_loss = 0.0
-        val_loss = 0.0
-        for step, x_batch_train in enumerate(train_dataset):
-            per_replica_loss = strategy.run(train_step, args=(x_batch_train, model, optimizer))
-            step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_loss, axis=None)
-            train_loss += step_loss.numpy()
-        for x_batch_val in val_dataset:
-            per_replica_val_loss = strategy.run(val_step, args=(x_batch_val,model))
-            val_step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_loss, axis=None)
-            val_loss += val_step_loss.numpy()
-        #calculate mean and print
-        epoch_train_loss = train_loss / num_train_batch
-        train_losses.append(epoch_train_loss)
-        epoch_val_loss = val_loss / num_val_batch
-        val_losses.append(epoch_val_loss)
-        print(f"Training loss : {epoch_train_loss:.4f}")
-        print(f"Validation loss : {epoch_val_loss:.4f}")
+class VAEModel(tf.keras.Model):
+    def __init__(self,input_shape = (512, 512 ,3), latent_dim = 256):
+        super(VAEModel, self).__init__()
+        self.latent_dim = latent_dim
+        self.vae_unet = unet(input_shape, latent_dim)
 
-    model.save("/home/gou/Programs/fish/result/model.h5")
-    return train_losses, val_losses
+    def compile(self, optimizer, **kwargs):
+        super(VAEModel, self).compile(**kwargs)
+        self.optimizer = optimizer
+
+        self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name = "reconstruction_loss")
+        self.kl_loss_tracker = tf.keras.metrics.Mean(name = "kl_loss")
+        self.total_loss_tracker = tf.keras.metrics.Mean(name = "total_loss")
+
+    @property
+    def metrics(self):
+
+        return [self.reconstruction_loss_tracker,
+                self.kl_loss_tracker,
+                self.total_loss_tracker]
+    def vae_loss(self, y_true, y_pred, z_mean, z_log_var):
+        mse = tf.keras.losses.MeanSquaredError()
+        reconstruction_loss = mse(y_true, y_pred)
+
+        kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
+        total_loss = reconstruction_loss + kl_loss
+        return reconstruction_loss, kl_loss, total_loss
+
+    def train_step(self, data):
+        if isinstance(data, tuple):
+            x, _ = data
+        else:
+            x = data
+
+        with tf.GradientTape() as tape:
+
+            y_pred, z_mean, z_log_var = self.vae_unet(x, training=True)
+
+            reconstruction_loss, kl_loss, total_loss = self.vae_loss(x, y_pred, z_mean, z_log_var)
+
+        grads = tape.gradient(total_loss, self.vae_unet.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.vae_unet.trainable_variables))
+
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.kl_loss_tracker.update_state(kl_loss)
+        self.total_loss_tracker.update_state(total_loss)
+
+        return {
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "kl_loss": self.kl_loss_tracker.result(),
+            "loss": self.total_loss_tracker.result()
+        }
+    def val_step(self, data):
+        #
+        if isinstance(data, tuple):
+            x, _ = data
+        else:
+            x = data
+
+        y_pred, z_mean, z_log_var = self.vae_unet(x, training=False)
+        reconstruction_loss, kl_loss, total_loss = self.vae_loss(x, y_pred, z_mean, z_log_var)
+
+        # 更新指标
+        self.reconstruction_loss_tracker.update_state(reconstruction_loss)
+        self.kl_loss_tracker.update_state(kl_loss)
+        self.total_loss_tracker.update_state(total_loss)
+
+        return {
+            "reconstruction_loss": self.reconstruction_loss_tracker.result(),
+            "kl_loss": self.kl_loss_tracker.result(),
+            "loss": self.total_loss_tracker.result()
+        }
