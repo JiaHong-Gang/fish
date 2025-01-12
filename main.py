@@ -34,7 +34,7 @@ def main():
             y = None,
             batch_size = batch_size,
             epochs = epochs,
-            validation_data = x_val
+            validation_data = (x_val, None)
         )
         #plot_curve(train_losses, val_losses, epochs) # draw learning curve
 if __name__ == '__main__':
