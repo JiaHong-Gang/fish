@@ -26,7 +26,7 @@ class Training(VAEModel):
             "kl_loss": self.kl_loss_tracker.result(),
             "loss": self.total_loss_tracker.result()
         }
-    def val_step(self, data):
+    def test_step(self, data):
         #
         if isinstance(data, tuple):
             x, _ = data

@@ -6,6 +6,9 @@ class VAEModel(tf.keras.Model):
         super(VAEModel, self).__init__()
         self.latent_dim = latent_dim
         self.vae_unet = unet(input_shape, latent_dim)
+        
+    def call(self, inputs, training=None):
+        return self.vae_unet(inputs, training=training)
 
     def compile(self, optimizer, **kwargs):
         super(VAEModel, self).compile(**kwargs)
