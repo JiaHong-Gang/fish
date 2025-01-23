@@ -4,7 +4,6 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
-# 确保图像是 TensorFlow 格式且归一化
 def load_and_preprocess_images(folder_path):
     """加载并归一化图像"""
     images = []
@@ -21,8 +20,7 @@ def calculate_mse(original, reconstructed):
     """计算均方误差（MSE）"""
     mse = tf.keras.losses.MeanSquaredError()
     return mse(original, reconstructed).numpy()
-
-# 测试模型并计算 MSE 差异
+# 确保图像是 TensorFlow 格式且归一化
 def test_model_and_calculate_mse_difference(model, folder_original, folder_processed, save_path, num_samples=5):
     """测试模型并计算原始图像与处理后图像的 MSE 差异"""
     # 创建输出文件夹
@@ -35,10 +33,19 @@ def test_model_and_calculate_mse_difference(model, folder_original, folder_proce
 
     # 取样数量
     num_samples = min(num_samples, len(original_images), len(processed_images))
+    print("Original Images Shape:", np.shape(original_images))
+    print("Processed Images Shape:", np.shape(processed_images))
 
-    # 使用模型预测
-    reconstructed_original = model.predict(original_images[:num_samples])
-    reconstructed_processed = model.predict(processed_images[:num_samples])
+    # 使用模型预测，只取第一个输出
+    output_original = model.predict(original_images[:num_samples])
+    output_processed = model.predict(processed_images[:num_samples])
+
+    # 如果模型返回多个输出，只取第一个输出
+    reconstructed_original = output_original[0] if isinstance(output_original, list) else output_original
+    reconstructed_processed = output_processed[0] if isinstance(output_processed, list) else output_processed
+
+    print("Reconstructed Original Shape:", np.shape(reconstructed_original))
+    print("Reconstructed Processed Shape:", np.shape(reconstructed_processed))
 
     # 计算 MSE
     mse_original = calculate_mse(original_images[:num_samples], reconstructed_original)
