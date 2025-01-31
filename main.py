@@ -7,8 +7,7 @@ from process_image import process_image
 from unet_model import unet
 from train_step import Training
 from tensorflow.keras.optimizers import Adam
-from train_log import plot_curve
-from predict import prediction, predict_block_image, feature_dim_reduce
+from train_log import learning_curve
 
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
@@ -28,7 +27,7 @@ def main():
         x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
         vae_model = Training(input_shape=(512, 512, 3), latent_dim= 256)
         vae_model.compile(optimizer=Adam(learning_rate=1e-4))
-        vae_model.fit(
+        history = vae_model.fit(
             x = x_train,
             y = None,
             batch_size = batch_size,
@@ -36,7 +35,7 @@ def main():
             validation_data = (x_val, None)
         )
         print("end")
-        #plot_curve(train_losses, val_losses, epochs) # draw learning curve
+        learning_curve(history) # draw learning curve
 if __name__ == '__main__':
     main()
 
