@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 
 def learning_curve(history):
-    epochs = range(1, history.history["loss"] + 1)
+    epochs = range(1, len(history.history["loss"]) + 1)
     #total loss curve
     plt.figure(figsize = (12,4))
     plt.subplot(1, 3, 1)
