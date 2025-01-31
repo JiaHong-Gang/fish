@@ -1,11 +1,11 @@
-import tensorflow as tf
+"""
+mport tensorflow as tf
 from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 import os
 import numpy as np
 
 def load_and_preprocess_images(folder_path):
-    """加载并归一化图像"""
     images = []
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
@@ -17,12 +17,12 @@ def load_and_preprocess_images(folder_path):
 
 # 定义计算 MSE 函数
 def calculate_mse(original, reconstructed):
-    """计算均方误差（MSE）"""
+
     mse = tf.keras.losses.MeanSquaredError()
     return mse(original, reconstructed).numpy()
 # 确保图像是 TensorFlow 格式且归一化
 def test_model_and_calculate_mse_difference(model, folder_original, folder_processed, save_path, num_samples=5):
-    """测试模型并计算原始图像与处理后图像的 MSE 差异"""
+
     # 创建输出文件夹
     if not os.path.exists(save_path):
         os.makedirs(save_path)
@@ -93,3 +93,6 @@ print("✅ 模型已成功加载！")
 
 # 测试模型并计算 MSE 差异
 test_model_and_calculate_mse_difference(model, folder_original, folder_processed, save_path)
+"""
+
+
