@@ -36,7 +36,7 @@ def main():
         )
         print("end")
         learning_curve(history) # draw learning curve
-        vae_model.save("/home/gou/Programs/fish/result/model_weight.h5")
+        vae_model.save("/home/gou/Programs/fish/result/vae_model", save_format="tf")
         print("model weight has been saved")
 if __name__ == '__main__':
     main()
