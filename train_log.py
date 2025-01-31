@@ -13,7 +13,6 @@ def learning_curve(history):
     plt.legend()
 
     #reconstruction loss
-    plt.figure(figsize = (12,4))
     plt.subplot(1, 3, 2)
     plt.plot(epochs, history.history["reconstruction_loss"], label = "train reconstruction loss")
     plt.plot(epochs, history.history["val_reconstruction_loss"], label = "validation reconstruction loss")
@@ -23,8 +22,7 @@ def learning_curve(history):
     plt.legend()
 
     #KL loss
-    plt.figure(figsize = (12,4))
-    plt.subplot(1, 3, 2)
+    plt.subplot(1, 3, 3)
     plt.plot(epochs, history.history["kl_loss"], label = "train kl loss")
     plt.plot(epochs, history.history["val_kl_loss"], label = "validation kl loss")
     plt.xlabel("epochs")
