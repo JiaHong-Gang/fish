@@ -36,6 +36,7 @@ def main():
         )
         print("end")
         learning_curve(history) # draw learning curve
+        vae_model.build(input_shape=(None, 512, 512, 3))
         vae_model.save("/home/gou/Programs/fish/result/vae_model", save_format="tf")
         print("model weight has been saved")
 if __name__ == '__main__':
