@@ -2,5 +2,5 @@
 .idea
 result/
 result/model_weight.h5
-
-result/model_weight.h5
+mask_test_image.py
+__pycache__/
