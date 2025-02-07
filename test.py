@@ -1,5 +1,5 @@
-"""
-mport tensorflow as tf
+
+import tensorflow as tf
 from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
 import os
@@ -93,6 +93,6 @@ print("✅ 模型已成功加载！")
 
 # 测试模型并计算 MSE 差异
 test_model_and_calculate_mse_difference(model, folder_original, folder_processed, save_path)
-"""
+
 
 

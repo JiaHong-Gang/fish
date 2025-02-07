@@ -7,7 +7,6 @@ from process_image import process_image
 from unet_model import unet
 from train import train_model
 from train_log import plot_curve
-from predict import prediction, predict_block_image, feature_dim_reduce
 
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
