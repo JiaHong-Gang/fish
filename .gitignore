@@ -1,6 +1,5 @@
 .idea/vcs.xml
 .idea
 result/
-result/model_weight.h5
-
-result/model_weight.h5
+make_test_image.py
+__pycache__
