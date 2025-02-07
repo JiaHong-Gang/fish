@@ -4,3 +4,4 @@ result/
 result/model_weight.h5
 mask_test_image.py
 __pycache__/
+test_image/
