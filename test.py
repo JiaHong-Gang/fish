@@ -5,6 +5,10 @@ import matplotlib.pyplot as plt
 import os
 import numpy as np
 
+from sklearn.model_selection import train_test_split
+from load_image import load_images
+from process_image import process_image
+
 def load_and_preprocess_images(folder_path):
     images = []
     for file_name in os.listdir(folder_path):
@@ -93,6 +97,69 @@ print("✅ 模型已成功加载！")
 
 # 测试模型并计算 MSE 差异
 test_model_and_calculate_mse_difference(model, folder_original, folder_processed, save_path)
+"""
+# 1️⃣ 加载模型
+model_path = "/home/gou/Programs/fish/result/model.h5"
+model = load_model(model_path, compile=False)  # 不编译，因为我们手动计算 loss
+print("✅ Model has been loaded!")
 
+# 2️⃣ 预处理数据（确保数据类型是 float32）
+images = load_images()  # 加载图像
+images = process_image(images)  # 预处理图像
 
+x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)
+x_train = x_train.astype(np.float32)
+x_val = x_val.astype(np.float32)
 
+# 3️⃣ 处理训练集 & 测试集
+batch_size = 2  # 你训练时的 batch_size
+train_dataset = (
+    tf.data.Dataset.from_tensor_slices(x_train)
+    .map(lambda x: tf.cast(x, tf.float32))
+    .batch(batch_size)
+)
+val_dataset = (
+    tf.data.Dataset.from_tensor_slices(x_val)
+    .map(lambda x: tf.cast(x, tf.float32))
+    .batch(batch_size)
+)
+
+# 4️⃣ 计算损失
+def compute_losses(dataset, dataset_type="Train"):
+    total_loss = tf.Variable(0.0, dtype=tf.float32)
+    total_reco_loss = tf.Variable(0.0, dtype=tf.float32)
+    total_kl_loss = tf.Variable(0.0, dtype=tf.float32)
+    num_batches = tf.Variable(0, dtype=tf.int32)
+
+    for x_batch in dataset:
+        # 预测输出
+        y_pred, z_mean, z_log_var = model(x_batch, training=False)
+
+        # 计算 MSE 重建损失
+        mse_loss = tf.reduce_mean(tf.square(x_batch - y_pred))
+
+        # 计算 KL Loss（TensorFlow 计算，防止溢出）
+        kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
+
+        # 计算总损失
+        loss = mse_loss + kl_loss
+
+        # 更新累加损失
+        total_loss.assign_add(loss)
+        total_reco_loss.assign_add(mse_loss)
+        total_kl_loss.assign_add(kl_loss)
+        num_batches.assign_add(1)
+
+    # 计算平均损失
+    avg_loss = total_loss / tf.cast(num_batches, tf.float32)
+    avg_reco_loss = total_reco_loss / tf.cast(num_batches, tf.float32)
+    avg_kl_loss = total_kl_loss / tf.cast(num_batches, tf.float32)
+
+    print(f"\n📊 {dataset_type} - Total Loss: {avg_loss:.8f}, MSE Loss: {avg_reco_loss:.8f}, KL Loss: {avg_kl_loss:.8f}")
+    
+    return avg_loss.numpy(), avg_reco_loss.numpy(), avg_kl_loss.numpy()
+
+# 计算 **最后一个 epoch** 的损失
+final_train_loss, final_train_reco_loss, final_train_kl_loss = compute_losses(train_dataset, dataset_type="Train")
+final_val_loss, final_val_reco_loss, final_val_kl_loss = compute_losses(val_dataset, dataset_type="Validation")
+"""
