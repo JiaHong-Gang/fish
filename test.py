@@ -86,8 +86,8 @@ def test_model_and_calculate_mse_difference(model, folder_original, folder_proce
     plt.show()
 
 # 路径配置
-folder_original = "/home/gou/Programs/fish/test_image/horizon_split_test/original_image"  # 替换为原始图像文件夹路径
-folder_processed = "/home/gou/Programs/fish/test_image/horizon_split_test/horizon_split"  # 替换为处理后图像文件夹路径
+folder_original = "/home/gou/Programs/fish/test_image/gaussian_image_test"  # 替换为原始图像文件夹路径
+folder_processed = "/home/gou/Programs/fish/test_image/gaussian_image_test"  # 替换为处理后图像文件夹路径
 save_path = "/home/gou/Programs/fish/test"  # 替换为结果保存路径
 
 # 加载模型
