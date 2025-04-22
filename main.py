@@ -6,7 +6,7 @@ from load_image import load_images
 from process_image import process_image
 from unet_model import unet
 from train import train_model
-from train_log import plot_curve
+from train_log import plot_curve,save_train_log
 
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
@@ -20,13 +20,16 @@ def main():
     #strategy = tf.distribute.MirroredStrategy()
     strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
     print(f"number of devices: {strategy.num_replicas_in_sync}")
-    with strategy.scope():
+    with (strategy.scope()):
         images= load_images()  # load images
         images = process_image(images)  # process images
         x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
-        train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses = train_model(x_train, x_val, model, strategy)
-        plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs) # draw learning curve
+        train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses = train_model(x_train, x_val, model, strategy)
+
+        save_train_log("loss_history",train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses)
+        plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses, epochs) # draw learning curve
+
 if __name__ == '__main__':
     main()
 
