@@ -105,5 +105,5 @@ def train_model(x_train,x_val, model, strategy):
         print(f"Training loss: {epoch_train_loss:.8f}, Reconstruction loss: {epoch_train_reco_loss:.8f}, KL loss: {epoch_train_kl_loss:.8f}, perceptual loss: {epoch_train_perceptual_loss:.8f}")
         print(f"Validation loss: {epoch_val_loss:.8f}, Reconstruction loss: {epoch_val_reco_loss:.8f}, KL loss: {epoch_val_kl_loss:.8f}, perceptual loss: {epoch_val_perceptual_loss:.8f}")
     
-    model.save("/home/gou/Programs/fish/result/model.h5")
+    model.save("/home/gang/Programs/fish/result/model.h5")
     return train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses,  val_losses, val_reco_losses, val_kl_losses, val_perceptual_losses
