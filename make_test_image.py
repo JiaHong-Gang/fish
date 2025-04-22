@@ -3,7 +3,6 @@ import os
 import random
 import matplotlib.pyplot as plt
 import numpy as np
-from cv2.gapi import BGR2RGB
 
 folder_path = "/Users/gangjiahong/Downloads/IDdata"
 save_path = "/Users/gangjiahong/Desktop/rotation_image"
@@ -123,4 +122,17 @@ def rotation_image(image):
         plt.imshow(img)
         plt.show()
         plt.imsave(os.path.join(save_path, f"rotation_image{idx + 1}.jpg"), img)
+
+def gaussian_image():
+    image_size = (512, 512, 3)
+    mean = 0
+    std_dev = 50
+    for i in range(5):
+        gaussian_noise = np.random.normal(mean, std_dev, image_size).astype(np.int16)
+        gaussian_noise = np.clip(gaussian_noise + 128, 0, 255).astype(np.uint8)
+        plt.imsave(os.path.join(save_path, f"gaussian_noise_image{i + 1}.jpg"), gaussian_noise)
+        plt.figure(figsize=(12,5))
+        plt.title(f"gaussian noise")
+        plt.imshow(gaussian_noise)
+        plt.show()
 rotation_image(image)
