@@ -3,7 +3,7 @@ import os
 import sys
 def load_images():
     images = []
-    img_folder = "/home/gou/fish/IDdata"
+    img_folder = "/home/gang/fish/IDdata"
     #img_folder = "/Users/gangjiahong/Downloads/IDdata"
     if not os.path.exists(img_folder):
         print(f"Error, folder {img_folder} dose not exist.")
