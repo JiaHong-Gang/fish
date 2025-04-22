@@ -1,7 +1,12 @@
+from fileinput import filename
+
 import matplotlib.pyplot as plt
 import pandas as pd
+import os
 
-def save_train_log(filename,train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses):
+def save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses):
+    filename = "/home/gang/programs/fish/result/log_history"
+    os.makedirs(os.path.dirname(filename), exist_ok=True)
     df = pd.DataFrame(
         {
             "train_losses":train_losses,
@@ -55,7 +60,7 @@ def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptua
     plt.legend()
 
     plt.tight_layout()
-    plt.savefig("/home/gou/Programs/fish/result/learning_curve.jpeg")
+    plt.savefig("/home/gang/programs/fish/result/learning_curve.jpeg")
     print("Learning curves have been saved")
     plt.show()
 

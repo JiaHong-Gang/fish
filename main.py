@@ -27,7 +27,7 @@ def main():
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
         train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses = train_model(x_train, x_val, model, strategy)
 
-        save_train_log("loss_history",train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses)
+        save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses)
         plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses, epochs) # draw learning curve
 
 if __name__ == '__main__':
