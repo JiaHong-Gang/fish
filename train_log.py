@@ -5,7 +5,7 @@ import pandas as pd
 import os
 
 def save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses):
-    filename = "/home/gang/programs/fish/result/log_history"
+    filename = "/home/gang/programs/fish/result/log_history.csv"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
     df = pd.DataFrame(
         {
@@ -25,7 +25,7 @@ def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptua
     plt.figure(figsize=(15,5))
     
     # Total loss curve
-    plt.subplot(1,3,1)
+    plt.subplot(1,4,1)
     plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
     plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")
     plt.xlabel("Epochs")
@@ -34,7 +34,7 @@ def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptua
     plt.legend()
     
     # Reconstruction loss curve
-    plt.subplot(1,3,2)
+    plt.subplot(1,4,2)
     plt.plot(range(1, epochs + 1), train_reco_losses, label="Training Reconstruction Loss")
     plt.plot(range(1, epochs + 1), val_reco_losses, label="Validation Reconstruction Loss")
     plt.xlabel("Epochs")
@@ -43,7 +43,7 @@ def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptua
     plt.legend()
     
     # KL divergence loss curve
-    plt.subplot(1,3,3)
+    plt.subplot(1,4,3)
     plt.plot(range(1, epochs + 1), train_kl_losses, label="Training KL Loss")
     plt.plot(range(1, epochs + 1), val_kl_losses, label="Validation KL Loss")
     plt.xlabel("Epochs")
@@ -51,7 +51,7 @@ def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptua
     plt.title("KL Divergence Loss Curve")
     plt.legend()
     # perceptual loss curve
-    plt.subplot(1,3,3)
+    plt.subplot(1,4,4)
     plt.plot(range(1, epochs + 1), train_perceptual_losses, label="Training perceptual Loss")
     plt.plot(range(1, epochs + 1), val_perceptual_losses, label="Validation perceptual Loss")
     plt.xlabel("Epochs")

@@ -86,12 +86,12 @@ def test_model_and_calculate_mse_difference(model, folder_original, folder_proce
     plt.show()
 
 # 路径配置
-folder_original = "/home/gang/Programs/fish/test_image/gaussian_image_test"  # 替换为原始图像文件夹路径
-folder_processed = "/home/gang/Programs/fish/test_image/gaussian_image_test"  # 替换为处理后图像文件夹路径
-save_path = "/home/gang/Programs/fish/test"  # 替换为结果保存路径
+folder_original = "/home/gang/programs/fish/test_image/vertical_split_test/original_image"  # 替换为原始图像文件夹路径
+folder_processed = "/home/gang/programs/fish/test_image/vertical_split_test/vertical_split"  # 替换为处理后图像文件夹路径
+save_path = "/home/gang/programs/fish/test"  # 替换为结果保存路径
 
 # 加载模型
-model_path = "/home/gou/Programs/fish/result/model.h5"
+model_path = "/home/gang/programs/fish/result/model.h5"
 model = load_model(model_path)
 print("✅ 模型已成功加载！")
 
