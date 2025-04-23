@@ -3,6 +3,7 @@ from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 from config import alpha
 from perceptual import compute_perceptual_loss
+#define vae model loss
 def vae_loss(y_ture, y_pred, z_mean, z_log_var):
     mse = tf.keras.losses.MeanSquaredError(reduction = tf.keras.losses.Reduction.NONE)
     reconstruction_loss = tf.reduce_mean(mse(y_ture, y_pred))
@@ -10,7 +11,7 @@ def vae_loss(y_ture, y_pred, z_mean, z_log_var):
     perceptual_loss = compute_perceptual_loss(y_ture, y_pred)
     total_loss = reconstruction_loss + kl_loss + alpha * perceptual_loss
     return total_loss, reconstruction_loss, kl_loss, perceptual_loss
-
+#define train_step
 def train_step(x_batch, model, optimizer):
     with tf.GradientTape() as tape:
         y_pred, z_mean, z_log_var = model(x_batch, training = True)
@@ -18,10 +19,12 @@ def train_step(x_batch, model, optimizer):
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss, reco_loss, kl_loss, perceptual_loss
+#define valuation step
 def val_step(x_batch_val, model):
     y_pred, z_mean, z_log_var = model(x_batch_val, training = False)
     loss, reco_loss, kl_loss, perceptual_loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var)
     return loss, reco_loss, kl_loss, perceptual_loss
+#define train_model
 def train_model(x_train,x_val, model, strategy):
     #train dataset
     with strategy.scope():

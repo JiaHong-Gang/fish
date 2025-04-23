@@ -1,9 +1,7 @@
-from fileinput import filename
-
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-
+#save train log in csv file
 def save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses):
     filename = "/home/gang/programs/fish/result/log_history.csv"
     os.makedirs(os.path.dirname(filename), exist_ok=True)
@@ -21,6 +19,7 @@ def save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perce
     )
     df.to_csv(filename, index_label = "epoch")
     print("training log has been saved")
+#draw learning curve
 def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses, epochs):
     plt.figure(figsize=(15,5))
     
