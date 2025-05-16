@@ -1,10 +1,9 @@
 import cv2
 import os
 import sys
-def load_images():
+def load_images(img_folder = "/home/gang/fish/IDdata"):
     images = []
     total = 0
-    img_folder = "/home/gang/fish/IDdata"
     #img_folder = "/Users/gangjiahong/Downloads/IDdata"
     if not os.path.exists(img_folder):
         print(f"Error, folder {img_folder} dose not exist.")
