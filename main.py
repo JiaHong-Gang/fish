@@ -25,10 +25,10 @@ def main():
     strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
     print(f"number of devices: {strategy.num_replicas_in_sync}")
     with (strategy.scope()):
-        images= load_images(img_folder = "/Users/gangjiahong/Downloads/IDdata")  # load images
-        body_shape = load_images(img_folder ="/Users/gangjiahong/Downloads/masks" ) # load body shape mask
-        red_area = load_images(img_folder ="/Users/gangjiahong/Downloads/red_mask") # load red area mask
-        white_area = load_images(img_folder= "/Users/gangjiahong/Downloads/white_mask") # load white area mask
+        images= load_images(img_folder = "/home/gang/fish/IDdata")  # load images
+        body_shape = load_images(img_folder ="/home/gang/fish/masks" ) # load body shape mask
+        red_area = load_images(img_folder ="/home/gang/fish/red_mask") # load red area mask
+        white_area = load_images(img_folder= "/home/gang/fish/white_mask") # load white area mask
         images = process_image(images)  # process images
         body_shape = process_image(body_shape) # process body shape mask
         red_area = process_image(red_area) # process red area mask
