@@ -33,6 +33,7 @@ def main():
         body_shape = process_image(body_shape) # process body shape mask
         red_area = process_image(red_area) # process red area mask
         white_area = process_image(white_area) # process white area mask
+        mask_array = np.stack([body_shape, red_area, white_area], axis=1)
         """
         x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
         model= vae(input_shape=(ht_img, wd_img, 3))  # use unet model
