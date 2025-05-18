@@ -15,7 +15,6 @@ def load_images(img_folder = "/home/gang/fish/IDdata", is_mask = False):
             continue
         file_list.append(file)
     file_list.sort(key = lambda name : name.split("_")[0])
-    print(file_list[:10])
     for file in file_list:
         img_path = os.path.join(img_folder, file)
         if is_mask:
