@@ -8,7 +8,8 @@ from load_image import load_images
 from process_image import process_image
 from pair_image import pair
 from unet_model import unet
-
+from train_log import plot_curve
+from test import predictions
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
 #-----------------------check GPU---------------------------
@@ -34,13 +35,16 @@ def main():
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
         model.summary()
         model.compile(optimizer = Adam(learning_rate = 1e-4),loss = "binary_crossentropy", metrics = ["accuracy"])
-        model.fit(
+        history =model.fit(
             x = train_data,
             y = train_mask,
             validation_data = (val_data, val_mask), 
             batch_size = batch_size,
             epochs = epochs,
         )
+        model.save("/home/gang/programs/fish/result/model.h5")
+        plot_curve(history)
+        predictions(model, val_data, val_mask)
 if __name__ == '__main__':
     main()
 
