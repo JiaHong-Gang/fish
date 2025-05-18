@@ -1,6 +1,6 @@
 from tensorflow.keras.layers import GlobalAveragePooling2D, Conv2DTranspose
 from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate,Lambda, Reshape
-from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
+from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation, concatenate
 from tensorflow.keras.models import Model
 import tensorflow as tf
 from config import num_class
@@ -28,7 +28,7 @@ def unet(input_shape = (512, 512,3)):
 
     #bottom
     bc5 = Conv2D(filters=1024, kernel_size=3, activation="relu", padding = "same", name="bottleneck_1")(lp4)
-    bc5 = Conv2D(filters=1024, kernel_size=3, activation="relu", padding = "same", name="bottleneck_2)(bc5)
+    bc5 = Conv2D(filters=1024, kernel_size=3, activation="relu", padding = "same", name="bottleneck_2")(bc5)
 
     # decoder
     tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(bc5)
