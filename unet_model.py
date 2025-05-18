@@ -5,13 +5,8 @@ from tensorflow.keras.models import Model
 import tensorflow as tf
 from config import num_class
 
-def sampling(args):
-    z_mean, z_log_var = args
-    epsilon = tf.random.normal(shape = tf.shape(z_mean))
-    z = z_mean + tf.exp(0.5 * z_log_var) * epsilon
-    return z
 
-def vae(input_shape = (512, 512,3), latent_dim = 256):
+def unet(input_shape = (512, 512,3)):
     input_layer = Input(shape = input_shape, name = "input_image")
 
     #encoder
@@ -32,33 +27,32 @@ def vae(input_shape = (512, 512,3), latent_dim = 256):
     lp4 = MaxPooling2D(pool_size=2, name="left_pooling4")(lc4)
 
     #bottom
-    flatten = Flatten()(lp4)
+    bc5 = Conv2D(filters=1024, kernel_size=3, activation="relu", padding = "same", name="bottleneck_1")(lp4)
+    bc5 = Conv2D(filters=1024, kernel_size=3, activation="relu", padding = "same", name="bottleneck_2)(bc5)
 
-    z_mean = Dense(latent_dim, name = "z_mean")(flatten)
-    z_log_var = Dense(latent_dim, name = "z_log_var")(flatten)
-    # Sampling layer
-    z = Lambda(sampling, output_shape = (latent_dim,), name = "z")([z_mean, z_log_var])
     # decoder
-    decoder_input = Dense(32 * 32 * 512, activation = "relu", name = "decoder_input")(z)
-    reshape =Reshape((32, 32,512))(decoder_input)
-    tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(reshape)
+    tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(bc5)
+    tc4 = concatenate([tc4, lc4],name="concate_4")
     rc4 = Conv2D(filters=512, kernel_size= 3, activation= "relu", padding="same", name="right_conv4_1")(tc4)
     rc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="right_conv4_2")(rc4)
 
     tc3 = Conv2DTranspose(filters=256, kernel_size=2, strides=2, padding="same", name="transpose_conv3")(rc4)
+    tc3 = concatenate([tc3, lc3], name = "concate_3")
     rc3 = Conv2D(filters=256, kernel_size=3, activation="relu", padding="same", name="right_conv3_1")(tc3)
     rc3 = Conv2D(filters=256, kernel_size=3, activation="relu", padding="same", name="right_conv3_2")(rc3)
 
     tc2 = Conv2DTranspose(filters=128, kernel_size=2, strides=2, padding="same", name="transpose_conv2")(rc3)
+    tc2 = concatenate([tc2, lc2], name = "concate_2")
     rc2 = Conv2D(filters=128, kernel_size=3, activation="relu", padding="same", name="right_conv2_1")(tc2)
     rc2 = Conv2D(filters=128, kernel_size=3, activation="relu", padding="same", name="right_conv2_2")(rc2)
 
     tc1 = Conv2DTranspose(filters=64, kernel_size=2, strides=2, padding="same", name="transpose_conv1")(rc2)
+    tc1 = concatenate([tc1, lc1], name = "concate_1")
     rc1 = Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_1")(tc1)
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)
 
     output_layer = Conv2D(num_class, kernel_size = 1, activation = "sigmoid",name = "output_layer")(rc1)
 
-    model = Model(inputs = input_layer,outputs = [output_layer, z_mean, z_log_var], name = "vae_unet_model")
+    model = Model(inputs = input_layer,outputs = output_layer, name = "unet_model")
 
     return model
