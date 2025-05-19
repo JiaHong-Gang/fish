@@ -9,7 +9,7 @@ from process_image import process_image
 from pair_image import pair
 from unet_model import unet
 from metric import iou_metric
-from train_log import plot_curve
+from train_log import plot_curve, save_train_log
 from test import predictions
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
@@ -45,6 +45,7 @@ def main():
         )
         model.save("/home/gang/programs/fish/result/model.h5")
         plot_curve(history)
+        save_train_log(history)
         predictions(model, val_data, val_mask)
 if __name__ == '__main__':
     main()
