@@ -8,6 +8,7 @@ from load_image import load_images
 from process_image import process_image
 from pair_image import pair
 from unet_model import unet
+from metric import iou_metric
 from train_log import plot_curve
 from test import predictions
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
@@ -34,7 +35,7 @@ def main():
         train_data, train_mask, val_data, val_mask = pair(images, body_shape, red_area, white_area)# split dataset 80% for training 20% for validation          
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
         model.summary()
-        model.compile(optimizer = Adam(learning_rate = 1e-4),loss = "binary_crossentropy", metrics = ["accuracy"])
+        model.compile(optimizer = Adam(learning_rate = 1e-4),loss = "binary_crossentropy", metrics = [iou_metric])
         history =model.fit(
             x = train_data,
             y = train_mask,
