@@ -1,5 +1,6 @@
 import tensorflow as tf
 import os
+import numpy as np
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.optimizers import Adam
 
@@ -23,6 +24,8 @@ def main():
     #strategy = tf.distribute.MirroredStrategy()
     strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
     print(f"number of devices: {strategy.num_replicas_in_sync}")
+    print("Is GPU available:", tf.config.list_logical_devices('GPU'))
+    tf.config.optimizer.set_jit(False)
     with (strategy.scope()):
         images= load_images(img_folder = "/home/gang/fish/IDdata", is_mask = False)  # load images
         body_shape = load_images(img_folder ="/home/gang/fish/masks", is_mask = True  ) # load body shape mask
@@ -32,7 +35,7 @@ def main():
         body_shape = process_image(body_shape, is_mask = True) # process body shape mask
         red_area = process_image(red_area, is_mask = True) # process red area mask
         white_area = process_image(white_area, is_mask = True) # process white area mask
-        train_data, train_mask, val_data, val_mask = pair(images, body_shape, red_area, white_area)# split dataset 80% for training 20% for validation          
+        train_data, train_mask, val_data, val_mask = pair(images, body_shape, red_area, white_area)# split dataset 80% for training 20% for validation
         model= unet(input_shape=(ht_img, wd_img, 3))  # use unet model
         model.summary()
         model.compile(optimizer = Adam(learning_rate = 1e-4),loss = "binary_crossentropy", metrics = [iou_metric])

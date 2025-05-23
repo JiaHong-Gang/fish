@@ -51,7 +51,7 @@ def unet(input_shape = (512, 512,3)):
     rc1 = Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_1")(tc1)
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)
 
-    output_layer = Conv2D(num_class, kernel_size = 1, activation = "sigmoid",name = "output_layer")(rc1)
+    output_layer = Conv2D(num_class, kernel_size = 1, activation = "sigmoid" ,name = "output_layer")(rc1)
 
     model = Model(inputs = input_layer,outputs = output_layer, name = "unet_model")
 
