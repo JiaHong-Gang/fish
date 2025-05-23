@@ -11,7 +11,7 @@ def sampling(args):
     z = z_mean + tf.exp(0.5 * z_log_var) * epsilon
     return z
 
-def vae(input_shape = (512, 512,3), latent_dim = 256):
+def vae(input_shape = (512, 512,3), latent_dim = 128):
     input_layer = Input(shape = input_shape, name = "input_image")
 
     #encoder
@@ -39,8 +39,8 @@ def vae(input_shape = (512, 512,3), latent_dim = 256):
     # Sampling layer
     z = Lambda(sampling, output_shape = (latent_dim,), name = "z")([z_mean, z_log_var])
     # decoder
-    decoder_input = Dense(32 * 32 * 512, activation = "relu", name = "decoder_input")(z)
-    reshape =Reshape((32, 32,512))(decoder_input)
+    decoder_input = Dense(45 * 32 * 512, activation = "relu", name = "decoder_input")(z)
+    reshape =Reshape((45, 32,512))(decoder_input)
     tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(reshape)
     rc4 = Conv2D(filters=512, kernel_size= 3, activation= "relu", padding="same", name="right_conv4_1")(tc4)
     rc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="right_conv4_2")(rc4)

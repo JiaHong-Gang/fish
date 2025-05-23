@@ -2,9 +2,9 @@ import tensorflow as tf
 from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
-def vae_loss(y_ture, y_pred, z_mean, z_log_var):
+def vae_loss(y_true, y_pred, z_mean, z_log_var):
     mse = tf.keras.losses.MeanSquaredError(reduction = tf.keras.losses.Reduction.NONE)
-    reconstruction_loss = tf.reduce_mean(mse(y_ture, y_pred))
+    reconstruction_loss = tf.reduce_mean(mse(y_true, y_pred))
     kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
     total_loss = reconstruction_loss + kl_loss
     return total_loss, reconstruction_loss, kl_loss
@@ -21,7 +21,9 @@ def val_step(x_batch_val, model):
     loss, reco_loss, kl_loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var)
     return loss, reco_loss, kl_loss
 def train_model(x_train,x_val, model, strategy):
-    #train dataset
+    #train dataset 
+    x_train = x_train.astype('float32') / 255.0
+    x_val = x_val.astype('float32') / 255.0
     with strategy.scope():
         train_dataset = tf.data.Dataset.from_tensor_slices(x_train)
         train_dataset = train_dataset.shuffle(buffer_size=1000)
