@@ -20,6 +20,7 @@ def main():
     #strategy = tf.distribute.MirroredStrategy()
     strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
     print(f"number of devices: {strategy.num_replicas_in_sync}")
+    print("Is GPU available:", tf.config.list_logical_devices('GPU'))
     with strategy.scope():
         images= load_images()  # load images
         images = process_image(images)  # process images
