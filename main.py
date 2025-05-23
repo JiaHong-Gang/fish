@@ -6,7 +6,7 @@ from load_image import load_images
 from process_image import process_image
 from vae_model import vae
 from train import train_model
-from train_log import plot_curve
+from train_log import plot_curve, save_train_log
 
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
@@ -28,6 +28,7 @@ def main():
         model= vae(input_shape=(ht_img, wd_img, 3))  # use unet model
         train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses = train_model(x_train, x_val, model, strategy)
         plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs) # draw learning curve
+        save_train_log(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs)
 if __name__ == '__main__':
     main()
 
