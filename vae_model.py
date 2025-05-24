@@ -3,7 +3,7 @@ from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling
 from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
 from tensorflow.keras.models import Model
 import tensorflow as tf
-from config import num_class
+from config import channel_num
 
 def sampling(args):
     z_mean, z_log_var = args

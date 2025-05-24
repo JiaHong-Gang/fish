@@ -2,11 +2,11 @@ import tensorflow as tf
 from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
-def vae_loss(y_true, y_pred, z_mean, z_log_var):
+def vae_loss(y_true, y_pred, z_mean, z_log_var, beta = 1.0):
     mse = tf.keras.losses.MeanSquaredError(reduction = tf.keras.losses.Reduction.NONE)
     reconstruction_loss = tf.reduce_mean(mse(y_true, y_pred))
     kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
-    total_loss = reconstruction_loss + kl_loss
+    total_loss = reconstruction_loss + beta * kl_loss
     return total_loss, reconstruction_loss, kl_loss
 
 def train_step(x_batch, model, optimizer):
