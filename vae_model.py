@@ -11,7 +11,7 @@ def sampling(args):
     z = z_mean + tf.exp(0.5 * z_log_var) * epsilon
     return z
 
-def vae(input_shape = (512, 512,3), latent_dim = 128):
+def vae(input_shape = (512, 512,3), latent_dim = 256):
     input_layer = Input(shape = input_shape, name = "input_image")
 
     #encoder

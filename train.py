@@ -1,4 +1,5 @@
 import tensorflow as tf
+import numpy as np
 from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
