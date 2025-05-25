@@ -3,23 +3,29 @@ import numpy as np
 from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
-def vae_loss(y_true, y_pred, z_mean, z_log_var, beta = 1.0):
-    mse = tf.keras.losses.MeanSquaredError(reduction = tf.keras.losses.Reduction.NONE)
-    reconstruction_loss = tf.reduce_mean(mse(y_true, y_pred))
-    kl_loss = -0.5 * tf.reduce_mean(1 + z_log_var - tf.square(z_mean) - tf.exp(z_log_var))
+def vae_loss(y_true, y_pred, z_mean, z_log_var, beta):
+    reconstruction_loss = tf.reduce_mean(
+    tf.reduce_mean(tf.square(y_true - y_pred), axis=[1,2,3])
+)
+    kl_per_sample = -0.5 * tf.reduce_sum(
+        1. + z_log_var - tf.square(z_mean) - tf.exp(z_log_var),
+        axis=1
+    )
+    kl_loss = tf.reduce_mean(kl_per_sample)
     total_loss = reconstruction_loss + beta * kl_loss
     return total_loss, reconstruction_loss, kl_loss
-
-def train_step(x_batch, model, optimizer):
+def get_beta(epoch, max_beta = 0.01, warmup_epochs = 100):
+    return max_beta *min (1.0, (epoch + 1) / warmup_epochs)
+def train_step(x_batch, model, optimizer, beta):
     with tf.GradientTape() as tape:
         y_pred, z_mean, z_log_var = model(x_batch, training = True)
-        loss, reco_loss, kl_loss = vae_loss(x_batch, y_pred, z_mean, z_log_var)
+        loss, reco_loss, kl_loss = vae_loss(x_batch, y_pred, z_mean, z_log_var, beta)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss, reco_loss, kl_loss
-def val_step(x_batch_val, model):
+def val_step(x_batch_val, model, beta):
     y_pred, z_mean, z_log_var = model(x_batch_val, training = False)
-    loss, reco_loss, kl_loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var)
+    loss, reco_loss, kl_loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var, beta)
     return loss, reco_loss, kl_loss
 def train_model(x_train,x_val, model, strategy):
     #train dataset 
@@ -34,7 +40,7 @@ def train_model(x_train,x_val, model, strategy):
         val_dataset = tf.data.Dataset.from_tensor_slices(x_val)
         val_dataset = val_dataset.batch(batch_size)
         val_dataset = strategy.experimental_distribute_dataset(val_dataset)
-        optimizer = Adam(learning_rate=0.0001)
+        optimizer = Adam(learning_rate=0.00001)
     #calulate batch number
     num_train_batch = len(x_train) // batch_size
     if len(x_train) % batch_size != 0:
@@ -51,6 +57,7 @@ def train_model(x_train,x_val, model, strategy):
     val_kl_losses = []
     for epoch in range(epochs):
         print(f"\nEpoch {epoch + 1} / epochs")
+        beta = get_beta(epoch, max_beta = 0.01, warmup_epochs = 100 )
         train_loss = 0.0
         train_reco_loss = 0.0
         train_kl_loss = 0.0
@@ -58,7 +65,7 @@ def train_model(x_train,x_val, model, strategy):
         val_reco_loss = 0.0
         val_kl_loss = 0.0
         for step, x_batch_train in enumerate(train_dataset):
-            per_replica_losses = strategy.run(train_step, args=(x_batch_train, model, optimizer))
+            per_replica_losses = strategy.run(train_step, args=(x_batch_train, model, optimizer, beta))
             step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[0], axis=None)
             step_reco_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[1], axis=None)
             step_kl_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[2], axis=None)
@@ -68,7 +75,7 @@ def train_model(x_train,x_val, model, strategy):
         
         # Validation loop
         for x_batch_val in val_dataset:
-            per_replica_val_losses = strategy.run(val_step, args=(x_batch_val, model))
+            per_replica_val_losses = strategy.run(val_step, args=(x_batch_val, model, beta))
             val_step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[0], axis=None)
             val_step_reco_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[1], axis=None)
             val_step_kl_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[2], axis=None)

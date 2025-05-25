@@ -1,6 +1,7 @@
 
 import tensorflow as tf
 from tensorflow.keras.models import load_model
+from tensorflow.keras.models import Model
 import matplotlib.pyplot as plt
 import os
 import numpy as np
@@ -38,51 +39,33 @@ def test_model_and_calculate_mse_difference(model, folder_original, save_path, n
     # 取样数量
     num_samples = min(num_samples, len(original_images))
     print("Original Images Shape:", np.shape(original_images))
+    inference_model = Model(inputs=model.input,
+                        outputs=model.output[0])
 
-    # 使用模型预测，只取第一个输出
-    output_original = model.predict(original_images[:num_samples])
-    #output_processed = model.predict(processed_images[:num_samples])
+    # 2) 预测
+    recon_imgs = inference_model.predict(
+        original_images[:num_samples],
+        batch_size=num_samples
+    )
 
-    # 如果模型返回多个输出，只取第一个输出
-    reconstructed_original = output_original[0] if isinstance(output_original, list) else output_original
-    #reconstructed_processed = output_processed[0] if isinstance(output_processed, list) else output_processed
+    # 3) 打印 input/output 范围，检查是否正常
+    print(">>> input  min/max:", original_images.min(), original_images.max())
+    print(">>> output min/max:", recon_imgs.min(),      recon_imgs.max())
+    recon_uint8_ceil = np.ceil(recon_imgs * 255.0).clip(0, 255).astype("uint8")
 
-    print("Reconstructed Original Shape:", np.shape(reconstructed_original))
-    #print("Reconstructed Processed Shape:", np.shape(reconstructed_processed))
+    #    B) （可选）float 保存，让 matplotlib 自行映射
+    #       下面在 save 时直接传 recon_imgs[i] 并指定 vmin/vmax
 
-    # 计算 MSE
-    mse_original = calculate_mse(original_images[:num_samples], reconstructed_original)
-   # mse_processed = calculate_mse(processed_images[:num_samples], reconstructed_processed)
-
-    print(f"✅ 原始图像 MSE: {mse_original:.8f}")
-   # print(f"✅ 处理后图像 MSE: {mse_processed:.8f}")
-
-    # 保存图像
-    plt.figure(figsize=(15, 10))
+    # 5) 保存并打印
+    os.makedirs(save_path, exist_ok=True)
     for i in range(num_samples):
-        original_img = original_images[i]
-        reconstructed_img = reconstructed_original[i]
+    # 直接显示 float 图像，让 matplotlib 把 [0,1]→[0,255]
+         plt.imsave(os.path.join(save_path, f"recon_float_{i}.png"),
+               recon_imgs[i], vmin=0, vmax=1)
+         print(f"[{i}] recon float min/max = "
+             f"{recon_imgs[i].min():.4f}/{recon_imgs[i].max():.4f}")
 
-    # 确保 reconstructed 图像值在 [0, 1]
-        reconstructed_img = np.clip(reconstructed_img, 0, 1)
-
-        print(f"Reconstructed image {i} min/max: {reconstructed_img.min():.4f} / {reconstructed_img.max():.4f}")
-
-    # 显示和保存
-        plt.subplot(3, num_samples, i + 1)
-        plt.imshow(original_img)
-        plt.axis('off')
-        plt.title("Original")
-
-        plt.subplot(3, num_samples, 2 * num_samples + i + 1)
-        plt.imshow(reconstructed_img)
-        plt.axis('off')
-        plt.title("Reconstructed")
-
-        plt.imsave(os.path.join(save_path, f"original_image_{i}.png"), original_img)
-        plt.imsave(os.path.join(save_path, f"reconstructed_image_{i}.png"), reconstructed_img)
-
-   # 路径配置
+ # 路径配置
 folder_original = "/home/gang/fish/IDdata"  # 替换为原始图像文件夹路径
 #folder_processed = "/home/gou/Programs/fish/test_image/gaussian_image_test"  # 替换为处理后图像文件夹路径
 save_path = "/home/gang/programs/fish/test"  # 替换为结果保存路径
