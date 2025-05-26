@@ -3,7 +3,8 @@ import os
 import sys
 def load_images():
     images = []
-    img_folder = "/home/gou/fish/IDdata"
+    total = 0
+    img_folder = "/home/gang/fish/IDdata"
     #img_folder = "/Users/gangjiahong/Downloads/IDdata"
     if not os.path.exists(img_folder):
         print(f"Error, folder {img_folder} dose not exist.")
@@ -16,5 +17,7 @@ def load_images():
         img = cv2.imread(img_path)
         if img is not None:
             images.append(img)
-    print(f"{len(images)} images has been loaded.")
+            total += 1
+            print(f"loaded {total} iamges ...",end="\r")
+    print(f"{total} images has been loaded from {img_folder}.")
     return images

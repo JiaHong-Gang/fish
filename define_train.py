@@ -1,11 +1,11 @@
-from unet_model import unet
+from vae_model import vae
 import tensorflow as tf
 
 class VAEModel(tf.keras.Model):
     def __init__(self,input_shape = (512, 512 ,3), latent_dim = 256):
         super(VAEModel, self).__init__()
         self.latent_dim = latent_dim
-        self.vae_unet = unet(input_shape, latent_dim)
+        self.vae_unet = vae(input_shape, latent_dim)
         
     def call(self, inputs, training=None):
         return self.vae_unet(inputs, training=training)

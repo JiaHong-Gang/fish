@@ -1,63 +1,90 @@
 import tensorflow as tf
-import cv2
+import keras
+from tensorflow.keras.models import load_model
 import matplotlib.pyplot as plt
+import os
+import numpy as np
 
-# 定义线性 beta 计算函数
-def linear_beta_schedule(t, beta_start=0.0001, beta_end=0.02, T=1000):
-    t_float = tf.cast(t, tf.float32)
-    beta = beta_start + (beta_end - beta_start) * (t_float / (T - 1.))
-    return beta
+def load_and_preprocess_images(folder_path):
+    images = []
+    for file_name in os.listdir(folder_path):
+        file_path = os.path.join(folder_path, file_name)
+        if file_path.endswith(('.jpg', '.png', '.jpeg')):
+            img = tf.keras.preprocessing.image.load_img(file_path, target_size=(720, 512))  # resize model input size
+            img = tf.keras.preprocessing.image.img_to_array(img) / 255.0  # normalized image to [0, 1]
+            images.append(img)
+    return np.array(images)
 
-# 定义 sample 函数
-def sample(x0, t):
-    # 如果 t 是标量张量，确保转换为 1D 张量
-    if tf.rank(t) == 0:
-        t = tf.reshape(t, [1])
+# define MSE function
+def calculate_mse(original, reconstructed):
 
-    beta = linear_beta_schedule(t)
-    alpha = 1.0 - beta
-    sqrt_alpha = tf.sqrt(alpha)
-    sqrt_alpha = tf.cast(sqrt_alpha, tf.float32)
-    one_min_alpha = tf.sqrt(1.0 - alpha)
-    one_min_alpha = tf.cast(one_min_alpha, tf.float32)
+    mse = tf.keras.losses.MeanSquaredError()
+    return mse(original, reconstructed).numpy()
 
-    # 保证维度正确
-    sqrt_alpha = sqrt_alpha[:, None, None, None]
-    one_min_alpha = one_min_alpha[:, None, None, None]
+def test_model_and_calculate_mse_difference(model, folder_original, save_path, num_samples=5):
 
-    # 添加噪声
-    noisy = tf.random.normal(tf.shape(x0))
-    noisy = tf.cast(noisy, tf.float32)
+    # make output file
+    if not os.path.exists(save_path):
+        os.makedirs(save_path)
 
-    # 计算噪声图像
-    x_t = sqrt_alpha * x0 + one_min_alpha * noisy
-    return x_t
+    # load original images and processed images
+    original_images = load_and_preprocess_images(folder_original)
+    #processed_images = load_and_preprocess_images(folder_processed)
 
-# 加载图像
-train_data_path = "/Users/gangjiahong/Downloads/data1/3.県品評会/第14回千葉県若鯉品評会/1.15部総合優勝.jpg"
-train_data = cv2.imread(train_data_path)
-train_data = cv2.cvtColor(train_data, cv2.COLOR_BGR2RGB)
-ht_img, wd_img = 512, 512
-train_data = cv2.resize(train_data, (ht_img, wd_img))
-train_data = tf.convert_to_tensor(train_data, dtype=tf.float32) / 255.0
+    # sample number
+    num_samples = min(num_samples, len(original_images))
+    print("Original Images Shape:", np.shape(original_images))
+    #print("Processed Images Shape:", np.shape(processed_images))
 
-# 确保 train_data 为 4D 张量
-train_data = tf.expand_dims(train_data, axis=0)
+    # use model tp predict ,only use first output
+    output_original = model.predict(original_images[:num_samples])
+    #output_processed = model.predict(processed_images[:num_samples])
 
-# 正确传递 t (作为标量张量)
-t = tf.constant(10000, dtype=tf.float32)  # 正确的标量张量
+    # if model back multiply output ,only use first
+    reconstructed_original = output_original[0] if isinstance(output_original, list) else output_original
+    #reconstructed_processed = output_processed[0] if isinstance(output_processed, list) else output_processed
 
-# 调用 sample 函数
-train_data_noisy = sample(train_data, t)
+    print("Reconstructed Original Shape:", np.shape(reconstructed_original))
+    #print("Reconstructed Processed Shape:", np.shape(reconstructed_processed))
 
-# 显示图像
-train_data_noisy = tf.squeeze(train_data_noisy)  # 去掉 batch 维度
-train_data_noisy = tf.clip_by_value(train_data_noisy, 0.0, 1.0)
+    # calculate mse
+    mse_original = calculate_mse(original_images[:num_samples], reconstructed_original)
+    #mse_processed = calculate_mse(processed_images[:num_samples], reconstructed_processed)
 
-plt.figure(figsize=(10, 8))
-plt.title("Noisy Image")
-plt.imshow(train_data_noisy.numpy())
-plt.show()
+    print(f"✅ original MSE: {mse_original:.8f}")
+    #print(f"✅ processed MSE: {mse_processed:.8f}")
+
+    # save image
+    plt.figure(figsize=(15, 10))
+    for i in range(num_samples):
+        # original images
+        plt.subplot(3, num_samples, i + 1)
+        plt.imshow(original_images[i])
+        plt.axis('off')
+        plt.title("Original Image")
+        plt.imsave(os.path.join(save_path, f"original_image_{i}.png"), original_images[i])
+
+        # reconstructed images
+        plt.subplot(3, num_samples, 2 * num_samples + i + 1)
+        plt.imshow(reconstructed_original[i])
+        plt.axis('off')
+        plt.title("Reconstructed Processed")
+        plt.imsave(os.path.join(save_path, f"reconstructed_image_{i}.png"), reconstructed_original[i])
+
+    plt.tight_layout()
+    plt.show()
+
+# set path
+folder_original = "/home/gang/fish/IDdata"
+save_path = "/home/gang/programs/fish/test"
+
+# load model
+model_path = "/home/gang/programs/fish/result/vae_model"
+vae_model = keras.models.load_model(model_path)
+print("✅ model has been loaded！")
+
+# calculate mse
+test_model_and_calculate_mse_difference(vae_model, folder_original, save_path)
 
 
 
