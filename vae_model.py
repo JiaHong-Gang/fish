@@ -66,6 +66,6 @@ def vae(input_shape = (720, 512,3), latent_dim = 256):
 
     output_layer = Conv2D(channel_class, kernel_size = 1, activation = "sigmoid",name = "output_layer")(rc1)
 
-    model = Model(inputs = input_layer,outputs = [output_layer, z_mean, z_log_var], name = "vae_unet_model")
+    model = Model(inputs = input_layer,outputs = [output_layer, z_mean, z_log_var], name = "vae_model")
 
     return model

@@ -2,5 +2,5 @@
 .idea
 result/
 result/model_weight.h5
-
+__pycache__/
 result/model_weight.h5
