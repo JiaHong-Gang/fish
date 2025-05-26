@@ -10,7 +10,7 @@ def load_and_preprocess_images(folder_path):
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
         if file_path.endswith(('.jpg', '.png', '.jpeg')):
-            img = tf.keras.preprocessing.image.load_img(file_path, target_size=(720, 512))  # resize model input size
+            img = tf.keras.preprocessing.image.load_img(file_path, target_size=(1088, 768))  # resize model input size
             img = tf.keras.preprocessing.image.img_to_array(img) / 255.0  # normalized image to [0, 1]
             images.append(img)
     return np.array(images)
