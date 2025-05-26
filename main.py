@@ -7,6 +7,7 @@ from process_image import process_image
 from vae_model import vae
 from train import train_model
 from train_log import plot_curve, save_train_log
+from tensorflow.keras.optimizers import Adam
 
 os.environ['TF_GPU_ALLOCATOR'] = 'cuda_malloc_async'
 def main():
@@ -17,18 +18,17 @@ def main():
         print(gpu)
         tf.config.experimental.set_memory_growth(gpu, True)
 #----------------------use all GPU-------------------------
-    #strategy = tf.distribute.MirroredStrategy()
-    strategy = tf.distribute.OneDeviceStrategy(device="/GPU:0")
-    print(f"number of devices: {strategy.num_replicas_in_sync}")
     print("Is GPU available:", tf.config.list_logical_devices('GPU'))
-    with strategy.scope():
-        images= load_images()  # load images
-        images = process_image(images)  # process images
-        x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
-        model= vae(input_shape=(ht_img, wd_img, 3))  # use unet model
-        train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses = train_model(x_train, x_val, model, strategy)
-        plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs) # draw learning curve
-        save_train_log(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs)
+    images= load_images()  # load images
+    images = process_image(images)  # process images
+    x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
+    model= vae(input_shape=(ht_img, wd_img, 3))  # use vae model
+    train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses = train_model(x_train, x_val, model)
+    outputs = model.predict(x_val[:5])
+    recon = outputs[0]
+    print('after train:', recon.min(), recon.max())
+    plot_curve(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs) # draw learning curve
+    save_train_log(train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses, epochs)
 if __name__ == '__main__':
     main()
 

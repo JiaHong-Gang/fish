@@ -3,7 +3,7 @@ import numpy as np
 from config import batch_size, epochs
 from tensorflow.keras.optimizers import Adam
 
-def vae_loss(y_true, y_pred, z_mean, z_log_var, beta):
+def vae_loss(y_true, y_pred, z_mean, z_log_var, beta = 1.0):
     reconstruction_loss = tf.reduce_mean(
     tf.reduce_mean(tf.square(y_true - y_pred), axis=[1,2,3])
 )
@@ -14,40 +14,38 @@ def vae_loss(y_true, y_pred, z_mean, z_log_var, beta):
     kl_loss = tf.reduce_mean(kl_per_sample)
     total_loss = reconstruction_loss + beta * kl_loss
     return total_loss, reconstruction_loss, kl_loss
-def get_beta(epoch, max_beta = 0.01, warmup_epochs = 100):
+def get_beta(epoch, max_beta = 0.0, warmup_epochs = 100):
     return max_beta *min (1.0, (epoch + 1) / warmup_epochs)
 def train_step(x_batch, model, optimizer, beta):
     with tf.GradientTape() as tape:
-        y_pred, z_mean, z_log_var = model(x_batch, training = True)
+        outputs = model(x_batch, training=True)
+        y_pred, z_mean, z_log_var = outputs
         loss, reco_loss, kl_loss = vae_loss(x_batch, y_pred, z_mean, z_log_var, beta)
     gradients = tape.gradient(loss, model.trainable_variables)
     optimizer.apply_gradients(zip(gradients, model.trainable_variables))
     return loss, reco_loss, kl_loss
 def val_step(x_batch_val, model, beta):
-    y_pred, z_mean, z_log_var = model(x_batch_val, training = False)
+    outputs = model(x_batch_val, training=False)
+    y_pred, z_mean, z_log_var = outputs
     loss, reco_loss, kl_loss = vae_loss(x_batch_val, y_pred, z_mean, z_log_var, beta)
     return loss, reco_loss, kl_loss
-def train_model(x_train,x_val, model, strategy):
+def to_numpy(val):
+    try:
+        return val.numpy()
+    except AttributeError:
+        return val
+def train_model(x_train,x_val, model):
     #train dataset 
     x_train = x_train.astype('float32') / 255.0
     x_val = x_val.astype('float32') / 255.0
-    with strategy.scope():
-        train_dataset = tf.data.Dataset.from_tensor_slices(x_train)
-        train_dataset = train_dataset.shuffle(buffer_size=1000)
-        train_dataset = train_dataset.batch(batch_size)
-        train_dataset = strategy.experimental_distribute_dataset(train_dataset)
-        # validation dataset
-        val_dataset = tf.data.Dataset.from_tensor_slices(x_val)
-        val_dataset = val_dataset.batch(batch_size)
-        val_dataset = strategy.experimental_distribute_dataset(val_dataset)
-        optimizer = Adam(learning_rate=0.00001)
-    #calulate batch number
-    num_train_batch = len(x_train) // batch_size
-    if len(x_train) % batch_size != 0:
-        num_train_batch += 1
-    num_val_batch = len(x_val) // batch_size
-    if len(x_val) %batch_size != 0:
-        num_val_batch +=1
+    train_dataset = tf.data.Dataset.from_tensor_slices(x_train)
+    train_dataset = train_dataset.shuffle(buffer_size=1000)
+    train_dataset = train_dataset.batch(batch_size)
+    # validation dataset
+    val_dataset = tf.data.Dataset.from_tensor_slices(x_val)
+    val_dataset = val_dataset.batch(batch_size)
+    optimizer = Adam(learning_rate=0.0001)
+
     # train history
     train_losses = []
     train_reco_losses = []
@@ -57,49 +55,40 @@ def train_model(x_train,x_val, model, strategy):
     val_kl_losses = []
     for epoch in range(epochs):
         print(f"\nEpoch {epoch + 1} / epochs")
-        beta = get_beta(epoch, max_beta = 0.01, warmup_epochs = 100 )
+        beta = 1.0
         train_loss = 0.0
         train_reco_loss = 0.0
         train_kl_loss = 0.0
         val_loss = 0.0
         val_reco_loss = 0.0
         val_kl_loss = 0.0
-        for step, x_batch_train in enumerate(train_dataset):
-            per_replica_losses = strategy.run(train_step, args=(x_batch_train, model, optimizer, beta))
-            step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[0], axis=None)
-            step_reco_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[1], axis=None)
-            step_kl_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_losses[2], axis=None)
-            train_loss += step_loss.numpy()
-            train_reco_loss += step_reco_loss.numpy()
-            train_kl_loss += step_kl_loss.numpy()
-        
+        # Train loop
+        n_batches = 0
+        n_val_batches = 0
+        for x_batch in train_dataset:
+            loss, reco_loss, kl_loss = train_step(x_batch, model, optimizer, beta)
+            train_loss += to_numpy(loss)
+            train_reco_loss += to_numpy(reco_loss)
+            train_kl_loss += to_numpy(kl_loss)
+            n_batches += 1
+
         # Validation loop
         for x_batch_val in val_dataset:
-            per_replica_val_losses = strategy.run(val_step, args=(x_batch_val, model, beta))
-            val_step_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[0], axis=None)
-            val_step_reco_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[1], axis=None)
-            val_step_kl_loss = strategy.reduce(tf.distribute.ReduceOp.SUM, per_replica_val_losses[2], axis=None)
-            val_loss += val_step_loss.numpy()
-            val_reco_loss += val_step_reco_loss.numpy()
-            val_kl_loss += val_step_kl_loss.numpy()
-        
-        # Calculate means and store
-        epoch_train_loss = train_loss / num_train_batch
-        epoch_train_reco_loss = train_reco_loss / num_train_batch
-        epoch_train_kl_loss = train_kl_loss / num_train_batch
-        train_losses.append(epoch_train_loss)
-        train_reco_losses.append(epoch_train_reco_loss)
-        train_kl_losses.append(epoch_train_kl_loss)
-        
-        epoch_val_loss = val_loss / num_val_batch
-        epoch_val_reco_loss = val_reco_loss / num_val_batch
-        epoch_val_kl_loss = val_kl_loss / num_val_batch
-        val_losses.append(epoch_val_loss)
-        val_reco_losses.append(epoch_val_reco_loss)
-        val_kl_losses.append(epoch_val_kl_loss)
-        
-        print(f"Training loss: {epoch_train_loss:.8f}, Reconstruction loss: {epoch_train_reco_loss:.8f}, KL loss: {epoch_train_kl_loss:.8f}")
-        print(f"Validation loss: {epoch_val_loss:.8f}, Reconstruction loss: {epoch_val_reco_loss:.8f}, KL loss: {epoch_val_kl_loss:.8f}")
-    
+            loss, reco_loss, kl_loss = val_step(x_batch_val, model, beta)
+            val_loss += to_numpy(loss)
+            val_reco_loss += to_numpy(reco_loss)
+            val_kl_loss += to_numpy(kl_loss)
+            n_val_batches += 1
+       # Calculate means and store
+        train_losses.append(train_loss / n_batches)
+        train_reco_losses.append(train_reco_loss / n_batches)
+        train_kl_losses.append(train_kl_loss / n_batches)
+        val_losses.append(val_loss / n_val_batches)
+        val_reco_losses.append(val_reco_loss / n_val_batches)
+        val_kl_losses.append(val_kl_loss / n_val_batches)
+
+        print(f"Training loss: {train_losses[-1]:.8f}, Reconstruction loss: {train_reco_losses[-1]:.8f}, KL loss: {train_kl_losses[-1]:.8f}")
+        print(f"Validation loss: {val_losses[-1]:.8f}, Reconstruction loss: {val_reco_losses[-1]:.8f}, KL loss: {val_kl_losses[-1]:.8f}")
+
     model.save("/home/gang/programs/fish/result/model.h5")
     return train_losses, train_reco_losses, train_kl_losses, val_losses, val_reco_losses, val_kl_losses
