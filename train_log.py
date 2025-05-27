@@ -2,7 +2,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 import os
 def training_log(history):
-    file_name = "/home/gang/fish/programs/result/train_log.csv"
+    file_name = "/home/gang/programs/fish/result/train_log.csv"
     os.makedirs(os.path.dirname(file_name), exist_ok = True)
     df = pd.DataFrame(
         {
