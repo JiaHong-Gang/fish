@@ -1,66 +1,53 @@
 import matplotlib.pyplot as plt
 import pandas as pd
 import os
-#save train log in csv file
-def save_train_log(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses):
-    filename = "/home/gang/programs/fish/result/log_history.csv"
-    os.makedirs(os.path.dirname(filename), exist_ok=True)
+def training_log(history):
+    file_name = "/home/gang/programs/fish/result/train_log.csv"
+    os.makedirs(os.path.dirname(file_name), exist_ok = True)
     df = pd.DataFrame(
         {
-            "train_losses":train_losses,
-            "train_reco_losses":train_reco_losses,
-            "train_kl_losses":train_kl_losses,
-            "train_perceptual_losses":train_perceptual_losses,
-            "val_losses":val_losses,
-            "val_reco_losses":val_reco_losses,
-            "val_kl_losses":val_kl_losses,
-            "val_perceptual_losses":val_perceptual_losses,
+            "total loss":history.history.get("loss"),
+            "reconstruction loss":history.history.get("reconstruction_loss"),
+            "kl loss":history.history.get("kl_loss"),
+            "val total loss":history.history.get("val_loss"),
+            "val reconstruction loss":history.history.get("val_reconstruction_loss"),
+            "val kl loss":history.history.get("val_kl_loss")
         }
     )
-    df.to_csv(filename, index_label = "epoch")
-    print("training log has been saved")
-#draw learning curve
-def plot_curve(train_losses, train_reco_losses, train_kl_losses, train_perceptual_losses, val_losses, val_reco_losses, val_kl_losses ,val_perceptual_losses, epochs):
-    plt.figure(figsize=(15,5))
-    
-    # Total loss curve
-    plt.subplot(1,4,1)
-    plt.plot(range(1, epochs + 1), train_losses, label="Training Loss")
-    plt.plot(range(1, epochs + 1), val_losses, label="Validation Loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.title("Total Loss Curve")
+    df.to_csv(file_name, index_label = "epoch")
+    print(f"train log has been saved to :{file_name}")
+def learning_curve(history):
+    epochs = range(1, len(history.history["loss"]) + 1)
+    #total loss curve
+    plt.figure(figsize = (12,4))
+    plt.subplot(1, 3, 1)
+    plt.plot(epochs, history.history["loss"], label = "total train loss")
+    plt.plot(epochs, history.history["val_loss"], label = "total validation train loss")
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.title("total loss")
     plt.legend()
-    
-    # Reconstruction loss curve
-    plt.subplot(1,4,2)
-    plt.plot(range(1, epochs + 1), train_reco_losses, label="Training Reconstruction Loss")
-    plt.plot(range(1, epochs + 1), val_reco_losses, label="Validation Reconstruction Loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.title("Reconstruction Loss Curve")
+
+    #reconstruction loss
+    plt.subplot(1, 3, 2)
+    plt.plot(epochs, history.history["reconstruction_loss"], label = "train reconstruction loss")
+    plt.plot(epochs, history.history["val_reconstruction_loss"], label = "validation reconstruction loss")
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.title("reconstruction loss")
     plt.legend()
-    
-    # KL divergence loss curve
-    plt.subplot(1,4,3)
-    plt.plot(range(1, epochs + 1), train_kl_losses, label="Training KL Loss")
-    plt.plot(range(1, epochs + 1), val_kl_losses, label="Validation KL Loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.title("KL Divergence Loss Curve")
-    plt.legend()
-    # perceptual loss curve
-    plt.subplot(1,4,4)
-    plt.plot(range(1, epochs + 1), train_perceptual_losses, label="Training perceptual Loss")
-    plt.plot(range(1, epochs + 1), val_perceptual_losses, label="Validation perceptual Loss")
-    plt.xlabel("Epochs")
-    plt.ylabel("Loss")
-    plt.title("Perceptual Loss Curve")
+
+    #KL loss
+    plt.subplot(1, 3, 3)
+    plt.plot(epochs, history.history["kl_loss"], label = "train kl loss")
+    plt.plot(epochs, history.history["val_kl_loss"], label = "validation kl loss")
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.title("kl loss")
     plt.legend()
 
     plt.tight_layout()
     plt.savefig("/home/gang/programs/fish/result/learning_curve.jpeg")
-    print("Learning curves have been saved")
-    plt.show()
+    print("learning result has been saved")
 
 

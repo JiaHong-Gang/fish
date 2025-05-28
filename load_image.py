@@ -21,5 +21,5 @@ def load_images():
             print(f"loaded {total} images...",end="\r")
         else:
             print(f"warning: failed to load image{img_path}")
-    print(f"{total} images has been loaded.")
+    print(f"{total} images has been loaded from {img_folder}")
     return images

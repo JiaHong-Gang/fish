@@ -1,6 +1,4 @@
-#define hyperparameter
-batch_size = 2
-num_class = 3
+batch_size = 8
+channel_class = 3
 epochs = 100
-ht_img, wd_img = 512, 512
-alpha = 1.0
+ht_img, wd_img = 1088, 768
