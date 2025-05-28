@@ -10,12 +10,12 @@ class Training(VAEModel):
 
         with tf.GradientTape() as tape:
 
-            y_pred, z_mean, z_log_var = self.vae_unet(x, training=True)
+            y_pred, z_mean, z_log_var = self.vae(x, training=True)
 
             reconstruction_loss, kl_loss, total_loss = self.vae_loss(x, y_pred, z_mean, z_log_var)
 
-        grads = tape.gradient(total_loss, self.vae_unet.trainable_variables)
-        self.optimizer.apply_gradients(zip(grads, self.vae_unet.trainable_variables))
+        grads = tape.gradient(total_loss, self.vae.trainable_variables)
+        self.optimizer.apply_gradients(zip(grads, self.vae.trainable_variables))
 
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
@@ -33,7 +33,7 @@ class Training(VAEModel):
         else:
             x = data
 
-        y_pred, z_mean, z_log_var = self.vae_unet(x, training=False)
+        y_pred, z_mean, z_log_var = self.vae(x, training=False)
         reconstruction_loss, kl_loss, total_loss = self.vae_loss(x, y_pred, z_mean, z_log_var)
 
         # 更新指标
