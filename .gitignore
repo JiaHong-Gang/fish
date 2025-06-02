@@ -6,3 +6,4 @@ mask_test_image.py
 __pycache__/
 test_image
 test
+unet_model_weight/

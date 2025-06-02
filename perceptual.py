@@ -1,24 +1,22 @@
 import tensorflow as tf
-from tensorflow.keras.applications import ResNet50
-from tensorflow.keras.applications.resnet50 import preprocess_input
 from tensorflow.keras.models import Model
-#load resnet50 model
-layer_name = ["conv1_relu","conv2_block3_out","conv3_block4_out"]
-#layer_name = ["conv3_block4_out"]
-resnet50 = ResNet50(include_top = False, weights = "imagenet", input_shape = (1088,768,3))
-resnet50.trainable = False
+from tensorflow.keras.models import load_model
+
+#load unet model
+model_path = "/home/gang/programs/fish/unet_model_weight/model.h5"
+unet_model = load_model(model_path)
+layer_name = ["left_Conv1_2","left_Conv2_2","left_Conv3_2"]
+unet_model.trainable = False
 outputs = []
 for name in layer_name:
-    output = resnet50.get_layer(name).output
+    output = unet_model.get_layer(name).output
     outputs.append(output)
-perceptual_model = Model(inputs = resnet50.input, outputs = outputs) #get model's output of layer"conv3_block4_out"
+perceptual_model = Model(inputs = unet_model.input, outputs = outputs) #get model's output
 #define perceptual loss
 def compute_perceptual_loss (y_true, y_pred):
     loss = 0.0
-    y_true_proc = preprocess_input(y_true * 255.0)
-    y_pred_proc = preprocess_input(y_pred * 255.0)
-    f_true = perceptual_model(y_true_proc)
-    f_pred = perceptual_model(y_pred_proc)
+    f_true = perceptual_model(y_true)
+    f_pred = perceptual_model(y_pred)
     if not isinstance(f_true, (list, tuple)):
         f_true = [f_true]
         f_pred = [f_pred]
