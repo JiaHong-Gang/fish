@@ -4,7 +4,7 @@ from tensorflow.keras.models import load_model
 
 #load unet model
 model_path = "/home/gang/programs/fish/unet_model_weight/model.h5"
-unet_model = load_model(model_path)
+unet_model = load_model(model_path, compile = False)
 layer_name = ["left_Conv1_2","left_Conv2_2","left_Conv3_2"]
 unet_model.trainable = False
 outputs = []
