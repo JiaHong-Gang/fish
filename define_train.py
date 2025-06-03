@@ -16,6 +16,7 @@ class VAEModel(tf.keras.Model):
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
         self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
         self.perceptual_loss_tracker = tf.keras.metrics.Mean(name="perceptual_loss")
+        self.mask_loss_tracker = tf.keras.metrics.Mean(name = "mask_loss")
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
 
     @property
@@ -23,6 +24,7 @@ class VAEModel(tf.keras.Model):
         return [self.reconstruction_loss_tracker,
                 self.kl_loss_tracker,
                 self.perceptual_loss_tracker,
+                self.mask_loss_tracker,
                 self.total_loss_tracker]
 
     def vae_loss(self, y_true, y_pred, z_mean, z_log_var):

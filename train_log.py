@@ -10,10 +10,12 @@ def training_log(history):
             "reconstruction loss":history.history.get("reconstruction_loss"),
             "kl loss":history.history.get("kl_loss"),
             "perceptual loss":history.history.get("perceptual_loss"),
+            "mask loss": history.history.get("mask_loss"),
             "val total loss":history.history.get("val_loss"),
             "val reconstruction loss":history.history.get("val_reconstruction_loss"),
             "val kl loss":history.history.get("val_kl_loss"),
-            "val perceptual loss":history.history.get("val_perceptual_loss")
+            "val perceptual loss":history.history.get("val_perceptual_loss"),
+            "val mask loss": history.history.get("val_mask_loss")
         }
     )
     df.to_csv(file_name, index_label = "epoch")
@@ -21,8 +23,8 @@ def training_log(history):
 def learning_curve(history):
     epochs = range(1, len(history.history["loss"]) + 1)
     #total loss curve
-    plt.figure(figsize = (12,4))
-    plt.subplot(1, 4, 1)
+    plt.figure(figsize = (15,5))
+    plt.subplot(1, 5, 1)
     plt.plot(epochs, history.history["loss"], label = "total train loss")
     plt.plot(epochs, history.history["val_loss"], label = "total validation train loss")
     plt.xlabel("epochs")
@@ -31,7 +33,7 @@ def learning_curve(history):
     plt.legend()
 
     #reconstruction loss
-    plt.subplot(1, 4, 2)
+    plt.subplot(1, 5, 2)
     plt.plot(epochs, history.history["reconstruction_loss"], label = "train reconstruction loss")
     plt.plot(epochs, history.history["val_reconstruction_loss"], label = "validation reconstruction loss")
     plt.xlabel("epochs")
@@ -40,7 +42,7 @@ def learning_curve(history):
     plt.legend()
 
     #KL loss 
-    plt.subplot(1, 4, 3)
+    plt.subplot(1, 5, 3)
     plt.plot(epochs, history.history["kl_loss"], label = "train kl loss")
     plt.plot(epochs, history.history["val_kl_loss"], label = "validation kl loss")
     plt.xlabel("epochs")
@@ -48,12 +50,21 @@ def learning_curve(history):
     plt.title("kl loss")
     plt.legend() 
     #perceptual loss
-    plt.subplot(1, 4, 4)
+    plt.subplot(1, 5, 4)
     plt.plot(epochs, history.history["perceptual_loss"], label = "train perceptual loss")
     plt.plot(epochs, history.history["val_perceptual_loss"], label = "validation perceptual loss")
     plt.xlabel("epochs")
     plt.ylabel("loss")
     plt.title("perceptual loss")
+    plt.legend()
+    plt.tight_layout()
+    #mask loss
+    plt.subplot(1, 5, 5)
+    plt.plot(epochs, history.history["mask_loss"], label = "train mask loss")
+    plt.plot(epochs, history.history["val_mask_loss"], label = "validation mask loss")
+    plt.xlabel("epochs")
+    plt.ylabel("loss")
+    plt.title("mask loss")
     plt.legend()
     plt.tight_layout()
     plt.savefig("/home/gang/programs/fish/result/learning_curve.jpeg")

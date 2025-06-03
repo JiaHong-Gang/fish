@@ -12,7 +12,7 @@ def sampling(args):
     z = z_mean + tf.exp(0.5 * z_log_var) * epsilon
     return z
 
-def vae(input_shape = (720, 512,3), latent_dim = 256):
+def vae(input_shape = (1088, 768,3), latent_dim = 256):
     input_layer = Input(shape = input_shape, name = "input_image")
 
     #encoder
@@ -64,8 +64,9 @@ def vae(input_shape = (720, 512,3), latent_dim = 256):
     rc1 = Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_1")(tc1)
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)
 
-    output_layer = Conv2D(channel_class, kernel_size = 1, activation = "sigmoid",name = "output_layer")(rc1)
+    output_layer1 = Conv2D(channel_class, kernel_size = 1, activation = "sigmoid",name = "RGB_output_layer")(rc1)
+    output_layer2 = Conv2D(1, kernel_size = 1 , activation = "sigmoid", name = "mask_output_layer")(rc1)
 
-    model = Model(inputs = input_layer,outputs = [output_layer, z_mean, z_log_var], name = "vae_model")
+    model = Model(inputs = input_layer,outputs = [output_layer1, output_layer2, z_mean, z_log_var], name = "vae_model")
 
     return model

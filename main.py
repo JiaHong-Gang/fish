@@ -15,6 +15,7 @@ if gpus:
 from config import ht_img, wd_img, epochs, batch_size
 from load_image import load_images
 from process_image import process_image
+from pair_image import pair
 from vae_model import vae
 from train_step import Training
 from train_log import learning_curve, training_log
@@ -26,9 +27,11 @@ def main():
         print(gpu)
     print("Is GPU available:", tf.config.list_logical_devices('GPU'))
 #----------------------programs-------------------------
-    images= load_images()  # load images
-    images = process_image(images)  # process images
-    x_train, x_val = train_test_split(images, test_size=0.2, random_state=42)  # split dataset 80% for training 20% for validation
+    images = load_images("/home/gang/fish/IDdata", False)  # load images
+    mask = load_images("home/gang/fish/mask", True)
+    images = process_image(images, False)# process images
+    mask = process_image(mask, True)
+    x_train, x_val= pair(images, mask)  # split dataset 80% for training 20% for validation
     vae_model = Training(input_shape=(ht_img, wd_img, 3), latent_dim= 256)
     vae_model.compile(optimizer=Adam(learning_rate=1e-4))
     history = vae_model.fit(
