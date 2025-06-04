@@ -78,7 +78,7 @@ def test_model_and_calculate_mse_difference(model, folder_original, save_path, n
     plt.show()
 
 # set path
-folder_original = "/home/gang/fish/IDdata"
+folder_original = "/home/gang/fish/koi2"
 save_path = "/home/gang/programs/fish/test"
 
 # load model
