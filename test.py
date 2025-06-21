@@ -39,20 +39,22 @@ def test_model_and_calculate_mse_difference(model, folder_original, save_path, n
     print("Original Images Shape:", np.shape(original_images))
     #print("Processed Images Shape:", np.shape(processed_images))
 
-    # use model tp predict ,only use first output
+    # use model tp predict ,first output and second output
     output_original = model.predict(original_images[:num_samples])
-    #output_processed = model.predict(processed_images[:num_samples])
 
-    # if model back multiply output ,only use first
-    reconstructed_original = output_original[0] if isinstance(output_original, list) else output_original
-    #reconstructed_processed = output_processed[0] if isinstance(output_processed, list) else output_processed
-
+    # if model back multiply output ,use first and second
+    if isinstance(output_original, list):
+        reconstructed_original = output_original[0]
+        reconstructed_mask = output_original[1]
+    else:
+        reconstructed_original = output_original
+        reconstructed_mask = None
     print("Reconstructed Original Shape:", np.shape(reconstructed_original))
-    #print("Reconstructed Processed Shape:", np.shape(reconstructed_processed))
+    print("Reconstructed Mask Shape:", np.shape(reconstructed_mask))
 
     # calculate mse
     mse_original = calculate_mse(original_images[:num_samples], reconstructed_original)
-    #mse_processed = calculate_mse(processed_images[:num_samples], reconstructed_processed)
+    #mse_mask = calculate_mse(processed_images[:num_samples], reconstructed_processed)
 
     print(f"✅ original MSE: {mse_original:.8f}")
     #print(f"✅ processed MSE: {mse_processed:.8f}")
@@ -68,17 +70,25 @@ def test_model_and_calculate_mse_difference(model, folder_original, save_path, n
         plt.imsave(os.path.join(save_path, f"original_image_{i}.png"), original_images[i])
 
         # reconstructed images
-        plt.subplot(3, num_samples, 2 * num_samples + i + 1)
+        plt.subplot(3, num_samples, num_samples + i + 1)
         plt.imshow(reconstructed_original[i])
         plt.axis('off')
         plt.title("Reconstructed Processed")
         plt.imsave(os.path.join(save_path, f"reconstructed_image_{i}.png"), reconstructed_original[i])
-
+        
+        plt.subplot(3, num_samples, 2 * num_samples + i + 1)
+        mask = reconstructed_mask[i]
+        if mask.ndim == 3 and mask.shape[-1] == 1:
+            mask = np.squeeze(mask)
+        plt.imshow(mask, cmap='gray')
+        plt.axis("off")
+        plt.title("Reconstructed Mask")
+        plt.imsave(os.path.join(save_path, f"reconstructed_mask_{i}.png"), mask, cmap='gray')
     plt.tight_layout()
     plt.show()
 
 # set path
-folder_original = "/home/gang/fish/IDdata"
+folder_original = "/home/gang/fish/IDdata/"
 save_path = "/home/gang/programs/fish/test"
 
 # load model

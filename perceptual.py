@@ -22,7 +22,7 @@ def compute_perceptual_loss (y_true, y_pred):
     if not isinstance(f_true, (list, tuple)):
         f_true = [f_true]
         f_pred = [f_pred]
-    weights = [2.0, 0.5, 0.5]
+    weights = [3.0, 0.5, 0.5]
     #weights = [1.0]*len(f_true)
     for ft, fp, w in zip(f_true, f_pred, weights):
         loss += w * tf.reduce_mean(tf.square(ft - fp))

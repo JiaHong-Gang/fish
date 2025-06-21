@@ -2,10 +2,19 @@ from vae_model import vae
 import tensorflow as tf
 from perceptual import compute_perceptual_loss
 class VAEModel(tf.keras.Model):
-    def __init__(self, input_shape=(1088, 768, 3), latent_dim=256):
+    def __init__(self, input_shape=(1088, 768, 3), latent_dim=256,
+                reconstruction_weight = 1.0,
+                kl_weight = 1.0,
+                perceptual_weight = 1.0,
+                mask_weight = 1.0):
         super(VAEModel, self).__init__()
         self.latent_dim = latent_dim
         self.vae = vae(input_shape, latent_dim)
+
+        self.reconstruction_weight = reconstruction_weight
+        self.kl_weight = kl_weight
+        self.perceptual_weight = perceptual_weight
+        self.mask_weight = mask_weight
 
     def call(self, inputs, training=None):
         return self.vae(inputs, training=training)
