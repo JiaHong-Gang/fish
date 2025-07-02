@@ -1,4 +1,4 @@
-from tensorflow.keras.layers import GlobalAveragePooling2D, Conv2DTranspose
+from tensorflow.keras.layers import GlobalAveragePooling2D, Conv2DTranspose, UpSampling2D
 from  tensorflow.keras.layers import Conv2D, Dense, MaxPooling2D, AveragePooling2D,Concatenate,Lambda, Reshape
 from  tensorflow.keras.layers import Input, Add, Flatten, Dropout, BatchNormalization, Activation
 from tensorflow.keras.models import Model
@@ -44,22 +44,22 @@ def vae(input_shape = (1088, 768,3), latent_dim = 256):
     # decoder
     decoder_input = Dense(flat_dim, activation = "relu", name = "decoder_input")(z)
     reshape =Reshape((h, w, c))(decoder_input)
-    tc4 = Conv2DTranspose(filters=512, kernel_size= 2, strides = 2, padding="same", name="transpose_conv4")(reshape)
+    tc4 = UpSampling2D(size = (2,2), interpolation = "bilinear", name="upsample4")(reshape)
     #tc4 = Concatenate(name = "concatenate4")([tc4,lc4])
     rc4 = Conv2D(filters=512, kernel_size= 3, activation= "relu", padding="same", name="right_conv4_1")(tc4)
     rc4 = Conv2D(filters=512, kernel_size=3, activation="relu", padding="same", name="right_conv4_2")(rc4)
 
-    tc3 = Conv2DTranspose(filters=256, kernel_size=2, strides=2, padding="same", name="transpose_conv3")(rc4)
+    tc3 = UpSampling2D(size = (2,2), interpolation = "bilinear", name="upsample3")(rc4)
     #tc3 = Concatenate(name = "concatenate3")([tc3,lc3])
     rc3 = Conv2D(filters=256, kernel_size=3, activation="relu", padding="same", name="right_conv3_1")(tc3)
     rc3 = Conv2D(filters=256, kernel_size=3, activation="relu", padding="same", name="right_conv3_2")(rc3)
 
-    tc2 = Conv2DTranspose(filters=128, kernel_size=2, strides=2, padding="same", name="transpose_conv2")(rc3)
+    tc2 = UpSampling2D(size = (2,2), interpolation = "bilinear", name="upsample2")(rc3)
     #tc2 = Concatenate(name = "concatenate2")([tc2,lc2])
     rc2 = Conv2D(filters=128, kernel_size=3, activation="relu", padding="same", name="right_conv2_1")(tc2)
     rc2 = Conv2D(filters=128, kernel_size=3, activation="relu", padding="same", name="right_conv2_2")(rc2)
 
-    tc1 = Conv2DTranspose(filters=64, kernel_size=2, strides=2, padding="same", name="transpose_conv1")(rc2)
+    tc1 = UpSampling2D(size = (2,2), interpolation = "bilinear", name="upsample1")(rc2)
     #tc1 = Concatenate(name = "concatenate1")([tc1,lc1])
     rc1 = Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_1")(tc1)
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)

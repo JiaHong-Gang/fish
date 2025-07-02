@@ -12,7 +12,7 @@ def load_and_preprocess_images(folder_path):
     images = []
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
-        if file_path.endswith(('.jpg', '.png', '.jpeg')):
+        if file_path.endswith(('.jpg', '.png')):
             img = tf.keras.preprocessing.image.load_img(file_path, target_size=(1088, 768))  # resize model input size
             img = tf.keras.preprocessing.image.img_to_array(img) / 255.0  # normalized image to [0, 1]
             images.append(img)
@@ -88,7 +88,7 @@ def test_model_and_calculate_mse_difference(model, folder_original, save_path, n
     plt.show()
 
 # set path
-folder_original = "/home/gang/fish/IDdata/"
+folder_original = "/home/gang/programs/fish/result"
 save_path = "/home/gang/programs/fish/test"
 
 # load model
