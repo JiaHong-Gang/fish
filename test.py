@@ -12,7 +12,7 @@ def load_and_preprocess_images(folder_path):
     images = []
     for file_name in os.listdir(folder_path):
         file_path = os.path.join(folder_path, file_name)
-        if file_path.endswith(('.jpg', '.png')):
+        if file_path.endswith(('.jpg', '.png', ".JPG")):
             img = tf.keras.preprocessing.image.load_img(file_path, target_size=(1088, 768))  # resize model input size
             img = tf.keras.preprocessing.image.img_to_array(img) / 255.0  # normalized image to [0, 1]
             images.append(img)
@@ -23,76 +23,77 @@ def calculate_mse(original, reconstructed):
 
     mse = tf.keras.losses.MeanSquaredError()
     return mse(original, reconstructed).numpy()
+def test_model_and_calculate_mse_difference(model, folder_original, save_path, num_samples=40):
 
-def test_model_and_calculate_mse_difference(model, folder_original, save_path, num_samples=5):
-
-    # make output file
     if not os.path.exists(save_path):
         os.makedirs(save_path)
 
-    # load original images and processed images
     original_images = load_and_preprocess_images(folder_original)
-    #processed_images = load_and_preprocess_images(folder_processed)
 
-    # sample number
     num_samples = min(num_samples, len(original_images))
+    print(f"samples are: {num_samples}")
     print("Original Images Shape:", np.shape(original_images))
-    #print("Processed Images Shape:", np.shape(processed_images))
 
-    # use model tp predict ,first output and second output
-    output_original = model.predict(original_images[:num_samples])
+    reconstructed_original_list = []
+    reconstructed_mask_list = []
 
-    # if model back multiply output ,use first and second
-    if isinstance(output_original, list):
-        reconstructed_original = output_original[0]
-        reconstructed_mask = output_original[1]
-    else:
-        reconstructed_original = output_original
-        reconstructed_mask = None
-    print("Reconstructed Original Shape:", np.shape(reconstructed_original))
+    for i in range(num_samples):
+        single_image = np.expand_dims(original_images[i], axis=0)
+
+        output = model.predict(single_image)
+
+        if isinstance(output, list):
+            reconstructed_original_list.append(output[0][0])
+            reconstructed_mask_list.append(output[1][0])
+        else:
+            reconstructed_original_list.append(output[0])
+
+        print(f"🔄 Processing {i+1}/{num_samples}", end='\r')
+
+    reconstructed_original = np.array(reconstructed_original_list)
+    reconstructed_mask = np.array(reconstructed_mask_list) if reconstructed_mask_list else None
+
+    print("\nReconstructed Original Shape:", np.shape(reconstructed_original))
     print("Reconstructed Mask Shape:", np.shape(reconstructed_mask))
 
-    # calculate mse
     mse_original = calculate_mse(original_images[:num_samples], reconstructed_original)
-    #mse_mask = calculate_mse(processed_images[:num_samples], reconstructed_processed)
-
     print(f"✅ original MSE: {mse_original:.8f}")
-    #print(f"✅ processed MSE: {mse_processed:.8f}")
 
-    # save image
     plt.figure(figsize=(15, 10))
     for i in range(num_samples):
-        # original images
+
         plt.subplot(3, num_samples, i + 1)
         plt.imshow(original_images[i])
         plt.axis('off')
         plt.title("Original Image")
         plt.imsave(os.path.join(save_path, f"original_image_{i}.png"), original_images[i])
 
-        # reconstructed images
         plt.subplot(3, num_samples, num_samples + i + 1)
         plt.imshow(reconstructed_original[i])
         plt.axis('off')
-        plt.title("Reconstructed Processed")
+        plt.title("Reconstructed Output")
         plt.imsave(os.path.join(save_path, f"reconstructed_image_{i}.png"), reconstructed_original[i])
-        
+
+        """
+        #make images
         plt.subplot(3, num_samples, 2 * num_samples + i + 1)
         mask = reconstructed_mask[i]
         if mask.ndim == 3 and mask.shape[-1] == 1:
             mask = np.squeeze(mask)
-        plt.imshow(mask, cmap='gray')
+        plt.imshow(mask, cmap = "gray")
         plt.axis("off")
-        plt.title("Reconstructed Mask")
-        plt.imsave(os.path.join(save_path, f"reconstructed_mask_{i}.png"), mask, cmap='gray')
+        plt.title("Reconstructed mask")
+        plt.imsave(os.path.join(save_path,f"reconstructed_mask_{i}.png"), mask, cmap = "gray")
+        
     plt.tight_layout()
     plt.show()
-
+        """
 # set path
-folder_original = "/home/gang/programs/fish/result"
+folder_original = "/home/gang/fish/IDdata"
 save_path = "/home/gang/programs/fish/test"
 
 # load model
-model_path = "/home/gang/programs/fish/result/vae_model"
+model_path = "/home/gang/programs/fish/result/vae_model_upsample"
 vae_model = keras.models.load_model(model_path)
 print("✅ model has been loaded！")
 

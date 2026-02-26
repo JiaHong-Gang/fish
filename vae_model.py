@@ -65,8 +65,8 @@ def vae(input_shape = (1088, 768,3), latent_dim = 256):
     rc1= Conv2D(filters=64, kernel_size=3, activation="relu", padding="same", name="right_conv1_2")(rc1)
 
     output_layer1 = Conv2D(channel_class, kernel_size = 1, activation = "sigmoid",name = "RGB_output_layer")(rc1)
-    output_layer2 = Conv2D(1, kernel_size = 1 , activation = "sigmoid", name = "mask_output_layer")(rc1)
+    #output_layer2 = Conv2D(1, kernel_size = 1 , activation = "sigmoid", name = "mask_output_layer")(rc1)
 
-    model = Model(inputs = input_layer,outputs = [output_layer1, output_layer2, z_mean, z_log_var], name = "vae_model")
+    model = Model(inputs = input_layer,outputs = [output_layer1, z_mean, z_log_var], name = "vae_model")
 
     return model

@@ -5,8 +5,8 @@ class VAEModel(tf.keras.Model):
     def __init__(self, input_shape=(1088, 768, 3), latent_dim=256,
                 reconstruction_weight = 1.0,
                 kl_weight = 1.0,
-                perceptual_weight = 1.0,
-                mask_weight = 1.0):
+                perceptual_weight = 1.0
+                ):
         super(VAEModel, self).__init__()
         self.latent_dim = latent_dim
         self.vae = vae(input_shape, latent_dim)
@@ -14,7 +14,6 @@ class VAEModel(tf.keras.Model):
         self.reconstruction_weight = reconstruction_weight
         self.kl_weight = kl_weight
         self.perceptual_weight = perceptual_weight
-        self.mask_weight = mask_weight
 
     def call(self, inputs, training=None):
         return self.vae(inputs, training=training)
@@ -25,7 +24,6 @@ class VAEModel(tf.keras.Model):
         self.reconstruction_loss_tracker = tf.keras.metrics.Mean(name="reconstruction_loss")
         self.kl_loss_tracker = tf.keras.metrics.Mean(name="kl_loss")
         self.perceptual_loss_tracker = tf.keras.metrics.Mean(name="perceptual_loss")
-        self.mask_loss_tracker = tf.keras.metrics.Mean(name = "mask_loss")
         self.total_loss_tracker = tf.keras.metrics.Mean(name="total_loss")
 
     @property
@@ -33,7 +31,6 @@ class VAEModel(tf.keras.Model):
         return [self.reconstruction_loss_tracker,
                 self.kl_loss_tracker,
                 self.perceptual_loss_tracker,
-                self.mask_loss_tracker,
                 self.total_loss_tracker]
 
     def vae_loss(self, y_true, y_pred, z_mean, z_log_var):

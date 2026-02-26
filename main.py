@@ -28,14 +28,15 @@ def main():
     print("Is GPU available:", tf.config.list_logical_devices('GPU'))
 #----------------------programs-------------------------
     images = load_images("/home/gang/fish/IDdata", False)  # load images
-    mask = load_images("/home/gang/fish/masks", True)
+    #mask = load_images("/home/gang/fish/masks", True)
     images = process_image(images, False)# process images
-    mask = process_image(mask, True)
-    x_train, x_val= pair(images, mask, batch_size)  # split dataset 80% for training 20% for validation
+    #mask = process_image(mask, True)
+    #x_train, x_val= pair(images, mask, batch_size)  # split dataset 80% for training 20% for validation
+    x_train, x_val = train_test_split(images, test_size = 0.2, random_state = 42)
     vae_model = Training(input_shape=(ht_img, wd_img, 3), latent_dim= 256, reconstruction_weight = 1.0,
                 kl_weight = 1.0,
-                perceptual_weight = 1.0,
-                mask_weight = 1.0)
+                perceptual_weight = 1.0
+                )
     vae_model.compile(optimizer=Adam(learning_rate=1e-4))
     history = vae_model.fit(
         x = x_train,
@@ -47,9 +48,7 @@ def main():
     )
     
     print("end")
-    for batch in x_val.take(1):
-        sample = batch["input_image"][:5]  # 从 batch 中取前5个图像
-        break
+    sample = x_val[:5]  # 从 batch 中取前5个图像
     outputs = vae_model(sample, training = False)
     outputs = outputs[0]
     for i , output in enumerate(outputs):

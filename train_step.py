@@ -7,23 +7,18 @@ class Training(VAEModel):
         super().__init__(*args, **kwargs)
        
     def train_step(self, data):
-        x_img  = data["input_image"]
-        x_mask = data["mask"]
+        x_img  = data
 
         with tf.GradientTape() as tape:
 
-            y_pred, y_maskpred, z_mean, z_log_var = self.vae(x_img, training=True)
+            y_pred,  z_mean, z_log_var = self.vae(x_img, training=True)
 
             reconstruction_loss, kl_loss, _ = self.vae_loss(x_img, y_pred, z_mean, z_log_var)
-            perceptual_loss = compute_perceptual_loss(x_img, y_pred)
-            mask_loss = tf.reduce_mean(
-                    tf.keras.losses.binary_crossentropy(x_mask, y_maskpred)
-                )         
+            perceptual_loss = compute_perceptual_loss(x_img, y_pred)         
             total_loss = (
                 self.reconstruction_weight *reconstruction_loss + 
                 self.kl_weight * kl_loss + 
-                self.perceptual_weight * perceptual_loss + 
-                self.mask_weight * mask_loss
+                self.perceptual_weight * perceptual_loss
             )
 
         grads = tape.gradient(total_loss, self.vae.trainable_variables)
@@ -32,48 +27,39 @@ class Training(VAEModel):
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
         self.perceptual_loss_tracker.update_state(perceptual_loss)
-        self.mask_loss_tracker.update_state(mask_loss)
         self.total_loss_tracker.update_state(total_loss)
 
         return {
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
             "perceptual_loss": self.perceptual_loss_tracker.result(),
-            "mask_loss": self.mask_loss_tracker.result(),
             "loss": self.total_loss_tracker.result()
         }
     def test_step(self, data):
         #
         if isinstance(data, tuple):
-            x, _= data
+            x= data
         else:
             x = data
-        x_img = x["input_image"]
-        x_mask = x["mask"]
+        x_img = x
 
-        y_pred, y_maskpred, z_mean, z_log_var = self.vae(x_img, training=False)
+        y_pred, z_mean, z_log_var = self.vae(x_img, training=False)
         reconstruction_loss, kl_loss, _ = self.vae_loss(x_img, y_pred, z_mean, z_log_var)
         perceptual_loss = compute_perceptual_loss(x_img, y_pred)
-        mask_loss = tf.reduce_mean(
-            tf.keras.losses.binary_crossentropy(x_mask, y_maskpred)
-            )
         total_loss = (
             self.reconstruction_weight *reconstruction_loss +
             self.kl_weight * kl_loss + 
-            self.perceptual_weight * perceptual_loss +
-            self.mask_weight * mask_loss
+            self.perceptual_weight * perceptual_loss
             )
         #
         self.reconstruction_loss_tracker.update_state(reconstruction_loss)
         self.kl_loss_tracker.update_state(kl_loss)
         self.perceptual_loss_tracker.update_state(perceptual_loss)
-        self.mask_loss_tracker.update_state(mask_loss)
         self.total_loss_tracker.update_state(total_loss)
 
         return {
             "reconstruction_loss": self.reconstruction_loss_tracker.result(),
             "kl_loss": self.kl_loss_tracker.result(),
             "perceptual_loss": self.perceptual_loss_tracker.result(),
-            "mask_loss": self.mask_loss_tracker.result(),
             "loss": self.total_loss_tracker.result()
         }
